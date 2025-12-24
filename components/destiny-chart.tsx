@@ -1,7 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
-import { InkRevealText } from "./ink-reveal-text"
+import { useMemo, useState, useEffect } from "react"
 
 interface DataPoint {
   hour: number
@@ -30,8 +29,35 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
   const maxValue = 100
   const width = 300
   const height = 150
-  const currentHour = 12
+  
+  // 获取当前真实时间
+  const [now, setNow] = useState(() => new Date())
+  
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+  
+  // 当前小时（向下取整到最近的偶数小时）
+  const currentHour = Math.floor(now.getHours() / 2) * 2
   const nextHour = currentHour + 2 // 下一个即将到来的时间点
+  
+  // 计算倒计时
+  const countdown = useMemo(() => {
+    const nextTime = new Date(now)
+    nextTime.setHours(nextHour, 0, 0, 0)
+    
+    const diff = nextTime.getTime() - now.getTime()
+    if (diff <= 0) return "00:00:00"
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }, [now, nextHour])
 
   const data = useMemo(() => generateData(mode === "today" ? 1 : 2), [mode])
 
@@ -91,19 +117,6 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
 
   return (
     <div className="w-full select-none">
-      <div className="mb-4 flex justify-between items-end">
-        <InkRevealText 
-          text={mode === "today" ? "Today's Energy Flow" : "Life Trajectory"} 
-          className="text-[10px] uppercase tracking-[0.2em] text-foreground font-bold" 
-        />
-        {showChart && (
-          <div className="animate-fade-in flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full holographic-animate holographic" />
-            <span className="text-[9px] text-foreground uppercase tracking-widest">Live Frequency</span>
-          </div>
-        )}
-      </div>
-
       <div className={`relative border-[0.5px] border-foreground rounded-sm p-8 transition-all duration-1000 ease-in-out bg-background/50 ${
         !showChart ? "blur-md grayscale opacity-20 scale-[0.98]" : "blur-0 grayscale-0 opacity-100 scale-100"
       }`}>
@@ -154,14 +167,18 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                 left: `${(p.hour / 24) * 100}%`, 
                 top: `${100 - (p.value / maxValue) * 100}%`,
                 transform: 'translate(-50%, -50%)',
-                zIndex: isSelected ? 30 : 20,
+                zIndex: isSelected ? 30 : (isNext ? 25 : 20),
               }}>
-                {/* "即将到来" 标签 */}
-                {isNext && (
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-fade-in">
-                    <span className="text-[8px] uppercase tracking-widest px-1.5 py-0.5 border-[0.5px] border-foreground/10 rounded-sm bg-background opacity-60">
-                      即将到来
-                    </span>
+                {/* 倒计时气泡标签 - 跟随下一个时间点 */}
+                {isNext && mode === "today" && (
+                  <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap animate-fade-in" style={{ bottom: 'calc(100% + 20px)' }}>
+                    <div className="relative bg-foreground text-background px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center">
+                      <span className="text-[10px] font-mono tracking-wider text-center">
+                        {countdown}
+                      </span>
+                      {/* 气泡箭头 */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-foreground" />
+                    </div>
                   </div>
                 )}
                 
