@@ -144,7 +144,7 @@ export default function OraclePage() {
 
             {/* Usage indicator */}
             <div className="text-center my-8">
-              <p className="text-xs opacity-20">2 of 5 daily messages remaining</p>
+              <p className="text-xs opacity-20 font-light">2 of 5 daily messages remaining</p>
             </div>
           </div>
         </div>
