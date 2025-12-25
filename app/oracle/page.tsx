@@ -25,6 +25,7 @@ export default function OraclePage() {
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
   const eyeTimerRef = useRef<NodeJS.Timeout>()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // 根据输入框焦点状态改变眼睛方向
   useEffect(() => {
@@ -51,16 +52,20 @@ export default function OraclePage() {
     // 用户发送消息时，眼睛看向右下角（用户消息在右边）
     setEyeDirection("down-right")
     if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
-    eyeTimerRef.current = setTimeout(() => {
-      setEyeDirection("center")
-    }, 1500)
-
-    // 显示思考动画5秒
+    
+    // 滚动到新消息
     setTimeout(() => {
+      scrollContainerRef.current?.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      })
+    }, 100)
+
+    eyeTimerRef.current = setTimeout(() => {
+      // 显示思考动画，眼睛看向左下角并保持
       setIsThinking(true)
-      // 眼睛向下看，表示正在思考
-      setEyeDirection("down")
-    }, 500)
+      setEyeDirection("down-left")
+    }, 1500)
 
     // 5秒后显示AI回复
     setTimeout(() => {
@@ -75,13 +80,20 @@ export default function OraclePage() {
       }
       setMessages((prev) => [...prev, aiResponse])
 
-      // Oracle回复时，眼睛看向左下角（Oracle消息在左边）
-      setEyeDirection("down-left")
+      // 新消息出现后，滚动到新消息
+      setTimeout(() => {
+        scrollContainerRef.current?.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        })
+      }, 100)
+
+      // 新消息出现后，眼睛回正
       if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
       eyeTimerRef.current = setTimeout(() => {
         setEyeDirection("center")
-      }, 2000)
-    }, 5500)
+      }, 1000)
+    }, 6500)
   }
 
   // 清理定时器
@@ -118,7 +130,7 @@ export default function OraclePage() {
         {/* 顶部渐变遮罩 - 30%区域从透明到不透明 */}
         <div className="absolute top-0 left-0 right-0 h-[30%] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
         
-        <div className="h-full overflow-y-auto px-6 pb-6">
+        <div ref={scrollContainerRef} className="h-full overflow-y-auto px-6 pb-6">
           <div className="max-w-screen-sm mx-auto">
             {/* Messages */}
             <div className="space-y-6 pt-8">
