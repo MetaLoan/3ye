@@ -1474,6 +1474,10 @@
     cursor: help;
   }
 
+  .cursor-none {
+    cursor: none;
+  }
+
   .cursor-not-allowed {
     cursor: not-allowed;
   }
