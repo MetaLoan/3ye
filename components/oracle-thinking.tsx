@@ -11,8 +11,8 @@ export function OracleThinking() {
       </div>
 
       <div className="max-w-[85%] text-left">
-        {/* 思考气泡 */}
-        <div className="inline-block border hairline px-4 py-3 border-foreground bg-background">
+        {/* 思考镭射点 - 无边框 */}
+        <div className="inline-block px-4 py-3">
           <div className="flex items-center gap-1.5">
             {[0, 1, 2].map((i) => (
               <div
