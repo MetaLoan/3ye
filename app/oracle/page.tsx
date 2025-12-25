@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { BottomNav } from "@/components/bottom-nav"
 import { InkRevealText } from "@/components/ink-reveal-text"
 import { ChatMessage } from "@/components/chat-message"
+import { OracleInteractiveEye } from "@/components/oracle-interactive-eye"
 
 const initialMessages = [
   {
@@ -19,6 +20,18 @@ const initialMessages = [
 export default function OraclePage() {
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState("")
+  const [eyeDirection, setEyeDirection] = useState<"down" | "down-right" | "down-left" | "center">("center")
+  const [isInputFocused, setIsInputFocused] = useState(false)
+  const eyeTimerRef = useRef<NodeJS.Timeout>()
+
+  // 根据输入框焦点状态改变眼睛方向
+  useEffect(() => {
+    if (isInputFocused) {
+      setEyeDirection("down")
+    } else {
+      setEyeDirection("center")
+    }
+  }, [isInputFocused])
 
   const sendMessage = () => {
     if (!input.trim()) return
@@ -33,6 +46,13 @@ export default function OraclePage() {
     setMessages([...messages, newUserMessage])
     setInput("")
 
+    // 用户发送消息时，眼睛看向左下角
+    setEyeDirection("down-left")
+    if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
+    eyeTimerRef.current = setTimeout(() => {
+      setEyeDirection("center")
+    }, 1500)
+
     // Simulate AI response
     setTimeout(() => {
       const aiResponse = {
@@ -43,19 +63,41 @@ export default function OraclePage() {
         timestamp: "Just now",
       }
       setMessages((prev) => [...prev, aiResponse])
+
+      // Oracle回复时，眼睛看向右下角
+      setEyeDirection("down-right")
+      if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
+      eyeTimerRef.current = setTimeout(() => {
+        setEyeDirection("center")
+      }, 2000)
     }, 1500)
   }
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
+    }
+  }, [])
 
   return (
     <main className="min-h-screen bg-background pb-40">
       <div className="p-6 pt-12 max-w-screen-sm mx-auto">
         <div className="mb-12">
-          <h1 className="text-4xl font-light mb-2">
-            <InkRevealText text="Oracle" />
-          </h1>
-          <p className="text-sm opacity-60 font-light">
-            <InkRevealText text="Your all-knowing companion" />
-          </p>
+          <div className="flex items-start gap-4 mb-8">
+            {/* 交互式眼睛 */}
+            <div className="shrink-0">
+              <OracleInteractiveEye direction={eyeDirection} className="w-16 h-16" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-4xl font-light mb-2">
+                <InkRevealText text="Oracle" />
+              </h1>
+              <p className="text-sm opacity-60 font-light">
+                <InkRevealText text="Your all-knowing companion" />
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Messages */}
@@ -72,19 +114,21 @@ export default function OraclePage() {
       </div>
 
       {/* Fixed input area */}
-      <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t hairline border-foreground">
+      <div className="fixed bottom-20 left-0 right-0 p-6 bg-background">
         <div className="max-w-screen-sm mx-auto flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
             placeholder="Ask the oracle..."
-            className="flex-1 border hairline border-foreground rounded px-4 py-3 text-sm font-light bg-background focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="flex-1 border hairline border-foreground px-4 py-3 text-sm font-light bg-background focus:outline-none focus:ring-1 focus:ring-foreground"
           />
           <button
             onClick={sendMessage}
-            className="px-6 border hairline border-foreground rounded hover:bg-foreground hover:text-background transition-colors text-sm"
+            className="px-6 border hairline border-foreground hover:bg-foreground hover:text-background transition-colors text-sm"
           >
             Send
           </button>
