@@ -23,15 +23,9 @@ export function ChatMessage({ content, isUser, timestamp, contextHint }: ChatMes
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-6 gap-3`}>
-      {/* Oracle 头像 - 只在非用户消息时显示 */}
+      {/* Oracle 头像 - 只在非用户消息时显示，无动画保持稳定 */}
       {!isUser && (
-        <div 
-          className="shrink-0 transition-all duration-700 ease-out"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "scale(1)" : "scale(0.8)",
-          }}
-        >
+        <div className="shrink-0">
           <OracleEyeIcon className="w-10 h-10" />
         </div>
       )}

@@ -5,8 +5,8 @@ import { OracleEyeIcon } from "./oracle-eye-icon"
 export function OracleThinking() {
   return (
     <div className="flex justify-start mb-6 gap-3">
-      {/* Oracle 头像 */}
-      <div className="shrink-0 opacity-100 scale-100">
+      {/* Oracle 头像 - 无动画，保持稳定 */}
+      <div className="shrink-0">
         <OracleEyeIcon className="w-10 h-10" />
       </div>
 
