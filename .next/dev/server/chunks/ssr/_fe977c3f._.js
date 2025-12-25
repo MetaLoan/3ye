@@ -395,11 +395,23 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ink-reveal-text.tsx [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/shared/lib/app-dynamic.js [app-ssr] (ecmascript)");
+;
 "use client";
 ;
 ;
 ;
 ;
+;
+// 动态导入 3D 石头组件避免 SSR 问题
+const Stone3D = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(async ()=>{}, {
+    loadableGenerated: {
+        modules: [
+            "[project]/components/stone-3d.tsx [app-client] (ecmascript, next/dynamic entry)"
+        ]
+    },
+    ssr: false
+});
 const oracles = [
     {
         result: "YES",
@@ -422,253 +434,309 @@ const oracles = [
         message: "Let go of what you cannot control"
     }
 ];
+// 长按时按顺序显示的提示文字
+const holdingMessages = [
+    "Hold your breath...",
+    "Focus on your question...",
+    "Breathe steadily...",
+    "I see it! The question deep in your heart!",
+    "This question seems...",
+    "Let me answer you..."
+];
+// 随机生成 3-5 秒的等待时间
+const getRandomWaitTime = ()=>3000 + Math.random() * 2000;
+// 中途松开时的提示
+const unfocusedMessage = "It seems you lack focus. I cannot reveal the answer.";
 function FateStone() {
     const [isHolding, setIsHolding] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [progress, setProgress] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
+    const [currentMessageIndex, setCurrentMessageIndex] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
+    const [messageMode, setMessageMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("idle");
     const [revealed, setRevealed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [oracle, setOracle] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(oracles[0]);
     const [showChoice, setShowChoice] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isFadingOut, setIsFadingOut] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [showUnfocusedMessage, setShowUnfocusedMessage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const holdTimerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])();
     const progressTimerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])();
+    const messageTimerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])();
+    const stoneRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const completedRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(false);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const startHold = ()=>{
         if (revealed) return;
         setIsHolding(true);
         setProgress(0);
-        // Simulate progressive vibration intensity
+        setCurrentMessageIndex(0);
+        setMessageMode("fadein");
+        setShowUnfocusedMessage(false);
+        completedRef.current = false;
+        // 持续增加进度用于3D效果
         progressTimerRef.current = setInterval(()=>{
-            setProgress((prev)=>{
-                if (prev >= 100) {
-                    clearInterval(progressTimerRef.current);
-                    return 100;
-                }
-                return prev + 2;
-            });
+            setProgress((prev)=>Math.min(prev + 2, 100));
         }, 30);
-        // Release after 1.5 seconds
-        holdTimerRef.current = setTimeout(()=>{
-            releaseStone();
+    };
+    // 消息淡入完成后的回调
+    const handleMessageFadeInComplete = ()=>{
+        const waitTime = getRandomWaitTime();
+        const isLastMessage = currentMessageIndex === holdingMessages.length - 1;
+        // 等待随机 3-5 秒后开始消失动画
+        messageTimerRef.current = setTimeout(()=>{
+            if (isLastMessage) {
+                // 最后一条消息直接触发结果
+                completedRef.current = true;
+                triggerResult();
+            } else {
+                // 开始逐字消失动画
+                setMessageMode("fadeaway");
+            }
+        }, waitTime);
+    };
+    // 消息消失完成后的回调
+    const handleMessageFadeOutComplete = ()=>{
+        // 显示下一条消息
+        setCurrentMessageIndex((prev)=>prev + 1);
+        setMessageMode("fadein");
+    };
+    const triggerResult = ()=>{
+        // 清理定时器
+        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+        if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
+        // Generate oracle result
+        const randomOracle = oracles[Math.floor(Math.random() * oracles.length)];
+        setOracle(randomOracle);
+        setRevealed(true);
+        setIsHolding(false);
+        setProgress(0);
+        setMessageMode("idle");
+        // Show choice buttons after brief delay
+        setTimeout(()=>{
+            setShowChoice(true);
         }, 1500);
     };
     const releaseStone = ()=>{
+        if (!isHolding) return;
+        // 清理定时器
         if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
         if (progressTimerRef.current) clearInterval(progressTimerRef.current);
-        if (progress >= 100) {
-            // Generate oracle result
-            const randomOracle = oracles[Math.floor(Math.random() * oracles.length)];
-            setOracle(randomOracle);
-            setRevealed(true);
-            // Show choice buttons after brief delay
-            setTimeout(()=>{
-                setShowChoice(true);
-            }, 1500);
-        }
+        if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
+        // 如果已经完成，不做任何处理
+        if (completedRef.current || revealed) return;
+        // 中途松开显示不够专注的提示
+        setShowUnfocusedMessage(true);
         setIsHolding(false);
         setProgress(0);
+        setMessageMode("idle");
+        // 3秒后隐藏提示
+        setTimeout(()=>{
+            setShowUnfocusedMessage(false);
+        }, 3000);
     };
     const makeChoice = (choice)=>{
-        // Trigger butterfly effect animation and navigate to Life view
-        router.push("/?view=life&effect=true");
+        // 开始淡出动画
+        setIsFadingOut(true);
+        // 动画结束后重置状态
+        setTimeout(()=>{
+            setRevealed(false);
+            setShowChoice(false);
+            setIsFadingOut(false);
+            setOracle(oracles[0]);
+        }, 600); // 600ms 淡出动画
     };
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         return ()=>{
             if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
             if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+            if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
         };
     }, []);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex flex-col items-center justify-center min-h-[70vh]",
+        className: "relative flex flex-col items-center justify-start pt-8",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "relative mb-16",
-                children: [
-                    isHolding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "absolute inset-0 -m-8 rounded-full holographic-glow transition-opacity duration-300",
-                        style: {
-                            opacity: progress / 100,
-                            transform: `scale(${1 + progress / 200})`
-                        }
+                className: "relative",
+                ref: stoneRef,
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    onMouseDown: startHold,
+                    onMouseUp: releaseStone,
+                    onMouseLeave: releaseStone,
+                    onTouchStart: startHold,
+                    onTouchEnd: releaseStone,
+                    style: {
+                        cursor: revealed ? 'default' : 'pointer',
+                        pointerEvents: revealed ? 'none' : 'auto'
+                    },
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(Stone3D, {
+                        size: 320,
+                        isHolding: isHolding,
+                        progress: progress,
+                        revealed: revealed
                     }, void 0, false, {
                         fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 86,
+                        lineNumber: 176,
                         columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        onMouseDown: startHold,
-                        onMouseUp: releaseStone,
-                        onMouseLeave: releaseStone,
-                        onTouchStart: startHold,
-                        onTouchEnd: releaseStone,
-                        className: `relative w-64 h-64 rounded-full border hairline border-foreground bg-foreground transition-transform duration-300 ${isHolding ? "scale-95" : "scale-100 hover:scale-105"} ${revealed ? "opacity-50" : "opacity-100"}`,
-                        disabled: revealed,
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/components/fate-stone.tsx",
+                    lineNumber: 165,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/components/fate-stone.tsx",
+                lineNumber: 163,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "h-[200px] flex flex-col items-center justify-start mt-4",
+                children: [
+                    revealed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-center space-y-4 transition-all duration-500 ease-out",
+                        style: {
+                            opacity: isFadingOut ? 0 : 1,
+                            transform: isFadingOut ? 'translateY(-20px)' : 'translateY(0)'
+                        },
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute inset-8 border hairline border-background rounded-full opacity-30"
-                            }, void 0, false, {
-                                fileName: "[project]/components/fate-stone.tsx",
-                                lineNumber: 108,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute inset-16 border hairline border-background rounded-full opacity-20"
-                            }, void 0, false, {
-                                fileName: "[project]/components/fate-stone.tsx",
-                                lineNumber: 109,
-                                columnNumber: 11
-                            }, this),
-                            isHolding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute inset-0 flex items-center justify-center",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-background text-2xl font-light",
-                                    children: [
-                                        Math.floor(progress),
-                                        "%"
-                                    ]
-                                }, void 0, true, {
+                                className: "text-5xl font-light tracking-wider",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                    text: oracle.result
+                                }, void 0, false, {
                                     fileName: "[project]/components/fate-stone.tsx",
-                                    lineNumber: 114,
+                                    lineNumber: 197,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/fate-stone.tsx",
-                                lineNumber: 113,
+                                lineNumber: 196,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-sm opacity-60 max-w-xs mx-auto leading-relaxed",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                    text: oracle.message
+                                }, void 0, false, {
+                                    fileName: "[project]/components/fate-stone.tsx",
+                                    lineNumber: 200,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/components/fate-stone.tsx",
+                                lineNumber: 199,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 96,
-                        columnNumber: 9
+                        lineNumber: 189,
+                        columnNumber: 11
                     }, this),
-                    isHolding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                    showChoice && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex gap-4 w-full max-w-sm px-6 mt-6 transition-all duration-500 ease-out",
+                        style: {
+                            opacity: isFadingOut ? 0 : 1,
+                            transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)'
+                        },
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute inset-0 -m-12 rounded-full border hairline border-foreground opacity-30",
-                                style: {
-                                    animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite"
-                                }
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>makeChoice("follow"),
+                                className: "flex-1 border hairline border-foreground py-3 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal",
+                                children: "Follow"
                             }, void 0, false, {
                                 fileName: "[project]/components/fate-stone.tsx",
-                                lineNumber: 122,
+                                lineNumber: 214,
                                 columnNumber: 13
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute inset-0 -m-16 rounded-full border hairline border-foreground opacity-20",
-                                style: {
-                                    animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) 0.3s infinite"
-                                }
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>makeChoice("rebel"),
+                                className: "flex-1 border hairline border-foreground bg-foreground text-background py-3 text-sm font-light hover:bg-background hover:text-foreground transition-all ink-reveal-delay-1",
+                                children: "No Way"
                             }, void 0, false, {
                                 fileName: "[project]/components/fate-stone.tsx",
-                                lineNumber: 128,
+                                lineNumber: 220,
                                 columnNumber: 13
                             }, this)
                         ]
-                    }, void 0, true)
+                    }, void 0, true, {
+                        fileName: "[project]/components/fate-stone.tsx",
+                        lineNumber: 207,
+                        columnNumber: 11
+                    }, this),
+                    !revealed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-center h-[60px] flex flex-col items-center justify-center overflow-hidden",
+                        children: showUnfocusedMessage ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-sm opacity-70 tracking-wide text-foreground/60 italic",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                text: unfocusedMessage,
+                                staggerDelay: 30
+                            }, void 0, false, {
+                                fileName: "[project]/components/fate-stone.tsx",
+                                lineNumber: 234,
+                                columnNumber: 17
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/components/fate-stone.tsx",
+                            lineNumber: 233,
+                            columnNumber: 15
+                        }, this) : isHolding && messageVisible ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-sm opacity-80 tracking-wide transition-all duration-500 ease-out",
+                            style: {
+                                opacity: messageFadingOut ? 0 : 1,
+                                filter: messageFadingOut ? 'blur(10px)' : 'blur(0px)',
+                                transform: messageFadingOut ? 'translateY(-15px)' : 'translateY(0)'
+                            },
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                text: holdingMessages[currentMessageIndex],
+                                staggerDelay: 40
+                            }, `msg-${currentMessageIndex}`, false, {
+                                fileName: "[project]/components/fate-stone.tsx",
+                                lineNumber: 246,
+                                columnNumber: 17
+                            }, this)
+                        }, currentMessageIndex, false, {
+                            fileName: "[project]/components/fate-stone.tsx",
+                            lineNumber: 237,
+                            columnNumber: 15
+                        }, this) : !isHolding && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs opacity-40 tracking-widest uppercase",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                        text: "Hold to seek guidance"
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/fate-stone.tsx",
+                                        lineNumber: 255,
+                                        columnNumber: 19
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/components/fate-stone.tsx",
+                                    lineNumber: 254,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs opacity-20 mt-2",
+                                    children: "3 times remaining today"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/fate-stone.tsx",
+                                    lineNumber: 257,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true)
+                    }, void 0, false, {
+                        fileName: "[project]/components/fate-stone.tsx",
+                        lineNumber: 231,
+                        columnNumber: 11
+                    }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/fate-stone.tsx",
-                lineNumber: 83,
+                lineNumber: 186,
                 columnNumber: 7
-            }, this),
-            revealed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center space-y-6 mb-12",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "text-6xl font-light tracking-wider",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                            text: oracle.result
-                        }, void 0, false, {
-                            fileName: "[project]/components/fate-stone.tsx",
-                            lineNumber: 142,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 141,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "text-sm opacity-60 max-w-xs mx-auto leading-relaxed",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                            text: oracle.message
-                        }, void 0, false, {
-                            fileName: "[project]/components/fate-stone.tsx",
-                            lineNumber: 145,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 144,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/fate-stone.tsx",
-                lineNumber: 140,
-                columnNumber: 9
-            }, this),
-            showChoice && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex gap-4 w-full max-w-sm px-6",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        onClick: ()=>makeChoice("follow"),
-                        className: "flex-1 border hairline border-foreground rounded py-4 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal",
-                        children: "I will follow"
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 153,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        onClick: ()=>makeChoice("rebel"),
-                        className: "flex-1 border hairline border-foreground rounded py-4 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal-delay-1",
-                        children: "No Way"
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 159,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/fate-stone.tsx",
-                lineNumber: 152,
-                columnNumber: 9
-            }, this),
-            !revealed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center mt-8",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs opacity-40 tracking-widest uppercase",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                            text: "Hold to seek guidance"
-                        }, void 0, false, {
-                            fileName: "[project]/components/fate-stone.tsx",
-                            lineNumber: 172,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 171,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs opacity-20 mt-2",
-                        children: "3 times remaining today"
-                    }, void 0, false, {
-                        fileName: "[project]/components/fate-stone.tsx",
-                        lineNumber: 174,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/fate-stone.tsx",
-                lineNumber: 170,
-                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/fate-stone.tsx",
-        lineNumber: 81,
+        lineNumber: 161,
         columnNumber: 5
     }, this);
 }

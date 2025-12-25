@@ -1,1 +1,9 @@
-{}
+{
+  "[project]/components/starfield-effect.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/starfield-effect.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/components_starfield-effect_tsx_e2387919._.js",
+      "static/chunks/components_starfield-effect_tsx_c00196f6._.js"
+    ]
+  }
+}

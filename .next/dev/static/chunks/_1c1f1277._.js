@@ -679,13 +679,24 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$styled$2d$jsx$2f$style$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/styled-jsx/style.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ink-reveal-text.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/shared/lib/app-dynamic.js [app-client] (ecmascript)");
+;
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
 ;
+// 动态导入 SingularityShader 避免 SSR 问题
+const SingularityShader = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])(()=>__turbopack_context__.A("[project]/components/singularity-shader.tsx [app-client] (ecmascript, next/dynamic entry, async loader)").then((mod)=>mod.SingularityShader), {
+    loadableGenerated: {
+        modules: [
+            "[project]/components/singularity-shader.tsx [app-client] (ecmascript, next/dynamic entry)"
+        ]
+    },
+    ssr: false
+});
+_c = SingularityShader;
 const generateData = (seed)=>{
     return Array.from({
         length: 13
@@ -703,9 +714,42 @@ function DestinyChart({ mode, showChart = true, selectedHour, onSelectHour }) {
     const maxValue = 100;
     const width = 300;
     const height = 150;
-    const currentHour = 12;
+    // 获取当前真实时间
+    const [now, setNow] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
+        "DestinyChart.useState": ()=>new Date()
+    }["DestinyChart.useState"]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "DestinyChart.useEffect": ()=>{
+            const timer = setInterval({
+                "DestinyChart.useEffect.timer": ()=>{
+                    setNow(new Date());
+                }
+            }["DestinyChart.useEffect.timer"], 1000);
+            return ({
+                "DestinyChart.useEffect": ()=>clearInterval(timer)
+            })["DestinyChart.useEffect"];
+        }
+    }["DestinyChart.useEffect"], []);
+    // 当前小时（向下取整到最近的偶数小时）
+    const currentHour = Math.floor(now.getHours() / 2) * 2;
     const nextHour = currentHour + 2 // 下一个即将到来的时间点
     ;
+    // 计算倒计时
+    const countdown = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "DestinyChart.useMemo[countdown]": ()=>{
+            const nextTime = new Date(now);
+            nextTime.setHours(nextHour, 0, 0, 0);
+            const diff = nextTime.getTime() - now.getTime();
+            if (diff <= 0) return "00:00:00";
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
+            const seconds = Math.floor(diff % (1000 * 60) / 1000);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }["DestinyChart.useMemo[countdown]"], [
+        now,
+        nextHour
+    ]);
     const data = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "DestinyChart.useMemo[data]": ()=>generateData(mode === "today" ? 1 : 2)
     }["DestinyChart.useMemo[data]"], [
@@ -795,280 +839,279 @@ function DestinyChart({ mode, showChart = true, selectedHour, onSelectHour }) {
         className: "jsx-889a215ec398f00e" + " " + "w-full select-none",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "jsx-889a215ec398f00e" + " " + "mb-4 flex justify-between items-end",
+                className: "jsx-889a215ec398f00e" + " " + "relative border-[0.5px] border-foreground rounded-sm overflow-hidden",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                        text: mode === "today" ? "Today's Energy Flow" : "Life Trajectory",
-                        className: "text-[10px] uppercase tracking-[0.2em] text-foreground font-bold"
+                    !showChart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "jsx-889a215ec398f00e" + " " + "absolute inset-0 z-10",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SingularityShader, {}, void 0, false, {
+                            fileName: "[project]/components/destiny-chart.tsx",
+                            lineNumber: 131,
+                            columnNumber: 13
+                        }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/destiny-chart.tsx",
-                        lineNumber: 95,
-                        columnNumber: 9
+                        lineNumber: 130,
+                        columnNumber: 11
                     }, this),
-                    showChart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-889a215ec398f00e" + " " + "animate-fade-in flex items-center gap-2",
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "jsx-889a215ec398f00e" + " " + `relative p-8 transition-all duration-1000 ease-in-out bg-background/50 ${!showChart ? "opacity-0" : "opacity-100"}`,
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-889a215ec398f00e" + " " + "w-1.5 h-1.5 rounded-full holographic-animate holographic"
-                            }, void 0, false, {
-                                fileName: "[project]/components/destiny-chart.tsx",
-                                lineNumber: 101,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "jsx-889a215ec398f00e" + " " + "text-[9px] text-foreground uppercase tracking-widest",
-                                children: "Live Frequency"
-                            }, void 0, false, {
-                                fileName: "[project]/components/destiny-chart.tsx",
-                                lineNumber: 102,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/components/destiny-chart.tsx",
-                        lineNumber: 100,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/destiny-chart.tsx",
-                lineNumber: 94,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "jsx-889a215ec398f00e" + " " + `relative border-[0.5px] border-foreground rounded-sm p-8 transition-all duration-1000 ease-in-out bg-background/50 ${!showChart ? "blur-md grayscale opacity-20 scale-[0.98]" : "blur-0 grayscale-0 opacity-100 scale-100"}`,
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        style: {
-                            height
-                        },
-                        className: "jsx-889a215ec398f00e" + " " + "relative",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                width: "100%",
-                                height: "100%",
-                                viewBox: `0 0 ${width} ${height}`,
-                                preserveAspectRatio: "none",
-                                className: "jsx-889a215ec398f00e" + " " + "absolute inset-0 overflow-visible",
+                                style: {
+                                    height
+                                },
+                                className: "jsx-889a215ec398f00e" + " " + "relative",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
-                                        className: "jsx-889a215ec398f00e",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
-                                            id: "holographic-dynamic-horizontal",
-                                            gradientUnits: "userSpaceOnUse",
-                                            x1: "0",
-                                            y1: "0",
-                                            x2: width,
-                                            y2: "0",
-                                            className: "jsx-889a215ec398f00e",
-                                            children: [
-                                                gradientStops.map((stop, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
-                                                        offset: stop.offset,
-                                                        stopColor: stop.color,
-                                                        stopOpacity: "0.25",
-                                                        className: "jsx-889a215ec398f00e"
-                                                    }, i, false, {
-                                                        fileName: "[project]/components/destiny-chart.tsx",
-                                                        lineNumber: 122,
-                                                        columnNumber: 19
-                                                    }, this)),
-                                                gradientStops.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
-                                                    offset: gradientStops[gradientStops.length - 1].offset,
-                                                    stopColor: gradientStops[gradientStops.length - 1].color,
-                                                    stopOpacity: "0",
-                                                    className: "jsx-889a215ec398f00e"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/destiny-chart.tsx",
-                                                    lineNumber: 125,
-                                                    columnNumber: 19
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/components/destiny-chart.tsx",
-                                            lineNumber: 120,
-                                            columnNumber: 15
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/destiny-chart.tsx",
-                                        lineNumber: 119,
-                                        columnNumber: 13
-                                    }, this),
-                                    [
-                                        25,
-                                        50,
-                                        75
-                                    ].map((val)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
-                                            x1: "0",
-                                            y1: height - val / maxValue * height,
-                                            x2: width,
-                                            y2: height - val / maxValue * height,
-                                            stroke: "currentColor",
-                                            strokeWidth: "0.5",
-                                            strokeDasharray: "2 4",
-                                            opacity: "0.05",
-                                            className: "jsx-889a215ec398f00e"
-                                        }, val, false, {
-                                            fileName: "[project]/components/destiny-chart.tsx",
-                                            lineNumber: 132,
-                                            columnNumber: 15
-                                        }, this)),
-                                    showChart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                        width: "100%",
+                                        height: "100%",
+                                        viewBox: `0 0 ${width} ${height}`,
+                                        preserveAspectRatio: "none",
+                                        className: "jsx-889a215ec398f00e" + " " + "absolute inset-0 overflow-visible",
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                d: areaPathData,
-                                                fill: "url(#holographic-dynamic-horizontal)",
-                                                className: "jsx-889a215ec398f00e" + " " + "animate-fade-in"
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
+                                                className: "jsx-889a215ec398f00e",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
+                                                    id: "holographic-dynamic-horizontal",
+                                                    gradientUnits: "userSpaceOnUse",
+                                                    x1: "0",
+                                                    y1: "0",
+                                                    x2: width,
+                                                    y2: "0",
+                                                    className: "jsx-889a215ec398f00e",
+                                                    children: [
+                                                        gradientStops.map((stop, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                                offset: stop.offset,
+                                                                stopColor: stop.color,
+                                                                stopOpacity: "0.25",
+                                                                className: "jsx-889a215ec398f00e"
+                                                            }, i, false, {
+                                                                fileName: "[project]/components/destiny-chart.tsx",
+                                                                lineNumber: 151,
+                                                                columnNumber: 19
+                                                            }, this)),
+                                                        gradientStops.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                            offset: gradientStops[gradientStops.length - 1].offset,
+                                                            stopColor: gradientStops[gradientStops.length - 1].color,
+                                                            stopOpacity: "0",
+                                                            className: "jsx-889a215ec398f00e"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/destiny-chart.tsx",
+                                                            lineNumber: 154,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/destiny-chart.tsx",
+                                                    lineNumber: 149,
+                                                    columnNumber: 15
+                                                }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/destiny-chart.tsx",
-                                                lineNumber: 137,
-                                                columnNumber: 17
+                                                lineNumber: 148,
+                                                columnNumber: 13
                                             }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                d: pastPathData,
-                                                fill: "none",
-                                                stroke: "currentColor",
-                                                strokeWidth: "1.2",
-                                                vectorEffect: "non-scaling-stroke",
-                                                className: "jsx-889a215ec398f00e"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/destiny-chart.tsx",
-                                                lineNumber: 138,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                d: futurePathData,
-                                                fill: "none",
-                                                stroke: "currentColor",
-                                                strokeWidth: "1.2",
-                                                strokeOpacity: "0.1",
-                                                strokeDasharray: "3 3",
-                                                vectorEffect: "non-scaling-stroke",
-                                                className: "jsx-889a215ec398f00e"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/destiny-chart.tsx",
-                                                lineNumber: 139,
-                                                columnNumber: 17
-                                            }, this)
+                                            [
+                                                25,
+                                                50,
+                                                75
+                                            ].map((val)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                                    x1: "0",
+                                                    y1: height - val / maxValue * height,
+                                                    x2: width,
+                                                    y2: height - val / maxValue * height,
+                                                    stroke: "currentColor",
+                                                    strokeWidth: "0.5",
+                                                    strokeDasharray: "2 4",
+                                                    opacity: "0.05",
+                                                    className: "jsx-889a215ec398f00e"
+                                                }, val, false, {
+                                                    fileName: "[project]/components/destiny-chart.tsx",
+                                                    lineNumber: 161,
+                                                    columnNumber: 15
+                                                }, this)),
+                                            showChart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: areaPathData,
+                                                        fill: "url(#holographic-dynamic-horizontal)",
+                                                        className: "jsx-889a215ec398f00e" + " " + "animate-fade-in"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/destiny-chart.tsx",
+                                                        lineNumber: 166,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: pastPathData,
+                                                        fill: "none",
+                                                        stroke: "currentColor",
+                                                        strokeWidth: "1.2",
+                                                        vectorEffect: "non-scaling-stroke",
+                                                        className: "jsx-889a215ec398f00e"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/destiny-chart.tsx",
+                                                        lineNumber: 167,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: futurePathData,
+                                                        fill: "none",
+                                                        stroke: "currentColor",
+                                                        strokeWidth: "1.2",
+                                                        strokeOpacity: "0.1",
+                                                        strokeDasharray: "3 3",
+                                                        vectorEffect: "non-scaling-stroke",
+                                                        className: "jsx-889a215ec398f00e"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/destiny-chart.tsx",
+                                                        lineNumber: 168,
+                                                        columnNumber: 17
+                                                    }, this)
+                                                ]
+                                            }, void 0, true)
                                         ]
-                                    }, void 0, true)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/components/destiny-chart.tsx",
-                                lineNumber: 112,
-                                columnNumber: 11
-                            }, this),
-                            showChart && points.map((p, i)=>{
-                                const isPast = p.hour < currentHour;
-                                const isCurrent = p.hour === currentHour;
-                                const isNext = p.hour === nextHour;
-                                const isSelected = selectedHour === p.hour;
-                                const isClickable = isPast || isCurrent || isNext;
-                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    style: {
-                                        left: `${p.hour / 24 * 100}%`,
-                                        top: `${100 - p.value / maxValue * 100}%`,
-                                        transform: 'translate(-50%, -50%)',
-                                        zIndex: isSelected ? 30 : 20
-                                    },
-                                    className: "jsx-889a215ec398f00e" + " " + "absolute",
-                                    children: [
-                                        isNext && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "jsx-889a215ec398f00e" + " " + "absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-fade-in",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "jsx-889a215ec398f00e" + " " + "text-[8px] uppercase tracking-widest px-1.5 py-0.5 border-[0.5px] border-foreground/10 rounded-sm bg-background opacity-60",
-                                                children: "即将到来"
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/destiny-chart.tsx",
-                                                lineNumber: 162,
-                                                columnNumber: 21
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/components/destiny-chart.tsx",
-                                            lineNumber: 161,
-                                            columnNumber: 19
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: ()=>isClickable && onSelectHour(isSelected ? null : p.hour),
-                                            disabled: !isClickable,
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/destiny-chart.tsx",
+                                        lineNumber: 141,
+                                        columnNumber: 11
+                                    }, this),
+                                    showChart && points.map((p, i)=>{
+                                        const isPast = p.hour < currentHour;
+                                        const isCurrent = p.hour === currentHour;
+                                        const isNext = p.hour === nextHour;
+                                        const isSelected = selectedHour === p.hour;
+                                        const isClickable = isPast || isCurrent || isNext;
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             style: {
-                                                cursor: isClickable ? 'pointer' : 'default'
+                                                left: `${p.hour / 24 * 100}%`,
+                                                top: `${100 - p.value / maxValue * 100}%`,
+                                                transform: 'translate(-50%, -50%)',
+                                                zIndex: isSelected ? 30 : isNext ? 25 : 20
                                             },
-                                            className: "jsx-889a215ec398f00e" + " " + "flex items-center justify-center pointer-events-auto group relative",
+                                            className: "jsx-889a215ec398f00e" + " " + "absolute",
                                             children: [
-                                                isCurrent && !isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "jsx-889a215ec398f00e" + " " + "absolute w-6 h-6 rounded-full bg-foreground/10 sonar-pulse"
+                                                isNext && mode === "today" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    style: {
+                                                        bottom: 'calc(100% + 20px)'
+                                                    },
+                                                    className: "jsx-889a215ec398f00e" + " " + "absolute left-1/2 -translate-x-1/2 whitespace-nowrap animate-fade-in",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "jsx-889a215ec398f00e" + " " + "relative bg-foreground text-background px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "jsx-889a215ec398f00e" + " " + "text-[10px] font-mono tracking-wider text-center",
+                                                                children: countdown
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/destiny-chart.tsx",
+                                                                lineNumber: 192,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "jsx-889a215ec398f00e" + " " + "absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-foreground"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/destiny-chart.tsx",
+                                                                lineNumber: 196,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/components/destiny-chart.tsx",
+                                                        lineNumber: 191,
+                                                        columnNumber: 21
+                                                    }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/destiny-chart.tsx",
-                                                    lineNumber: 177,
-                                                    columnNumber: 21
+                                                    lineNumber: 190,
+                                                    columnNumber: 19
                                                 }, this),
-                                                isClickable && !isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "jsx-889a215ec398f00e" + " " + "absolute w-4 h-4 rounded-full border-[0.5px] border-foreground/0 group-hover:border-foreground/20 transition-all"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/destiny-chart.tsx",
-                                                    lineNumber: 182,
-                                                    columnNumber: 21
-                                                }, this),
-                                                isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "jsx-889a215ec398f00e" + " " + "absolute w-5 h-5 rounded-full border-[2px] border-foreground animate-fade-in"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/destiny-chart.tsx",
-                                                    lineNumber: 187,
-                                                    columnNumber: 21
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "jsx-889a215ec398f00e" + " " + `
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                    onClick: ()=>isClickable && onSelectHour(isSelected ? null : p.hour),
+                                                    disabled: !isClickable,
+                                                    style: {
+                                                        cursor: isClickable ? 'pointer' : 'default'
+                                                    },
+                                                    className: "jsx-889a215ec398f00e" + " " + "flex items-center justify-center pointer-events-auto group relative",
+                                                    children: [
+                                                        isCurrent && !isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "jsx-889a215ec398f00e" + " " + "absolute w-6 h-6 rounded-full bg-foreground/10 sonar-pulse"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/destiny-chart.tsx",
+                                                            lineNumber: 210,
+                                                            columnNumber: 21
+                                                        }, this),
+                                                        isClickable && !isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "jsx-889a215ec398f00e" + " " + "absolute w-4 h-4 rounded-full border-[0.5px] border-foreground/0 group-hover:border-foreground/20 transition-all"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/destiny-chart.tsx",
+                                                            lineNumber: 215,
+                                                            columnNumber: 21
+                                                        }, this),
+                                                        isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "jsx-889a215ec398f00e" + " " + "absolute w-5 h-5 rounded-full border-[2px] border-foreground animate-fade-in"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/destiny-chart.tsx",
+                                                            lineNumber: 220,
+                                                            columnNumber: 21
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "jsx-889a215ec398f00e" + " " + `
                     rounded-full border-[1px] border-background transition-all duration-300
                     ${isSelected ? "w-2.5 h-2.5 bg-foreground scale-110" : isCurrent ? "w-2 h-2 bg-foreground" : "w-1.5 h-1.5"}
                     ${isPast || isCurrent ? "bg-foreground" : isNext ? "bg-foreground/30 border-foreground/10" : "bg-foreground/10 border-foreground/5"}
                     ${isClickable && !isSelected ? "group-hover:scale-125" : ""}
                   `
-                                                }, void 0, false, {
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/destiny-chart.tsx",
+                                                            lineNumber: 224,
+                                                            columnNumber: 19
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
                                                     fileName: "[project]/components/destiny-chart.tsx",
-                                                    lineNumber: 191,
-                                                    columnNumber: 19
+                                                    lineNumber: 201,
+                                                    columnNumber: 17
                                                 }, this)
                                             ]
-                                        }, void 0, true, {
+                                        }, i, true, {
                                             fileName: "[project]/components/destiny-chart.tsx",
-                                            lineNumber: 168,
-                                            columnNumber: 17
-                                        }, this)
-                                    ]
-                                }, i, true, {
-                                    fileName: "[project]/components/destiny-chart.tsx",
-                                    lineNumber: 153,
-                                    columnNumber: 15
-                                }, this);
-                            })
+                                            lineNumber: 182,
+                                            columnNumber: 15
+                                        }, this);
+                                    })
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/components/destiny-chart.tsx",
+                                lineNumber: 139,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "jsx-889a215ec398f00e" + " " + "flex justify-between mt-6 border-t-[0.5px] border-foreground/5 pt-3",
+                                children: data.filter((_, i)=>i % 2 === 0).map((d)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "jsx-889a215ec398f00e" + " " + "text-[8px] font-mono text-foreground tracking-tighter",
+                                        children: [
+                                            d.hour.toString().padStart(2, "0"),
+                                            ":00"
+                                        ]
+                                    }, d.hour, true, {
+                                        fileName: "[project]/components/destiny-chart.tsx",
+                                        lineNumber: 238,
+                                        columnNumber: 15
+                                    }, this))
+                            }, void 0, false, {
+                                fileName: "[project]/components/destiny-chart.tsx",
+                                lineNumber: 236,
+                                columnNumber: 11
+                            }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/destiny-chart.tsx",
-                        lineNumber: 110,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-889a215ec398f00e" + " " + "flex justify-between mt-6 border-t-[0.5px] border-foreground/5 pt-3",
-                        children: data.filter((_, i)=>i % 2 === 0).map((d)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "jsx-889a215ec398f00e" + " " + "text-[8px] font-mono text-foreground tracking-tighter",
-                                children: [
-                                    d.hour.toString().padStart(2, "0"),
-                                    ":00"
-                                ]
-                            }, d.hour, true, {
-                                fileName: "[project]/components/destiny-chart.tsx",
-                                lineNumber: 205,
-                                columnNumber: 13
-                            }, this))
-                    }, void 0, false, {
-                        fileName: "[project]/components/destiny-chart.tsx",
-                        lineNumber: 203,
+                        lineNumber: 136,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/destiny-chart.tsx",
-                lineNumber: 107,
+                lineNumber: 127,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$styled$2d$jsx$2f$style$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1078,14 +1121,15 @@ function DestinyChart({ mode, showChart = true, selectedHour, onSelectHour }) {
         ]
     }, void 0, true, {
         fileName: "[project]/components/destiny-chart.tsx",
-        lineNumber: 93,
+        lineNumber: 126,
         columnNumber: 5
     }, this);
 }
-_s(DestinyChart, "N8Xte3O182SgprBN40fgQ/Bp38g=");
-_c = DestinyChart;
-var _c;
-__turbopack_context__.k.register(_c, "DestinyChart");
+_s(DestinyChart, "eLvIhGa0nxtQoXEJ3z8g/A6tPHI=");
+_c1 = DestinyChart;
+var _c, _c1;
+__turbopack_context__.k.register(_c, "SingularityShader");
+__turbopack_context__.k.register(_c1, "DestinyChart");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -1397,7 +1441,10 @@ __turbopack_context__.s([
     ()=>StarRadar
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ink-reveal-text.tsx [app-client] (ecmascript)");
+;
+var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
@@ -1428,8 +1475,144 @@ const dimensions = [
         angle: 288
     }
 ];
+// 星座图标路径 (简化版)
+const ZODIAC_ICONS = {
+    Aries: "M-4-2c0-2 2-4 4-4s4 2 4 4m-8 0v6m8-6v6",
+    Taurus: "M0 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8M-4-4c0-2 2-4 4-4s4 2 4 4",
+    Gemini: "M-3-4v8M3-4v8M-4-4h8M-4 4h8",
+    Cancer: "M-4-2a3 3 0 1 1 6 0 3 3 0 0 1-6 0M4 2a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
+    Leo: "M-4 2a2 2 0 1 1 4 0 2 2 0 0 1-4 0M0 2c0-4 4-4 4 0s-4 4-4 4",
+    Virgo: "M-4-4v6a2 2 0 0 0 4 0v-6a2 2 0 0 0 4 0v6l2 2",
+    Libra: "M-4 2h8M-4 4h8M-4-1a4 4 0 0 1 8 0",
+    Scorpio: "M-4-4v6a2 2 0 0 0 4 0v-6a2 2 0 0 0 4 0v6l2-2l2 2",
+    Sagittarius: "M-4 4l8-8M0-4h4v4M-2 2l4-4",
+    Capricorn: "M-4-4v8l4-4v4c0 2 2 4 4 4",
+    Aquarius: "M-4-2l2 2 2-2 2 2 2-2M-4 2l2 2 2-2 2 2 2-2",
+    Pisces: "M-4-4a4 4 0 0 1 0 8M4-4a4 4 0 0 0 0 8M-4 0h8"
+};
+// 行星图标路径 (简化版)
+const PLANET_ICONS = {
+    Sun: "M0 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6M0 0.5h.1",
+    Moon: "M-2-4a5 5 0 1 0 0 8 4 4 0 1 1 0-8",
+    Mercury: "M0 4v-4m-3 0h6M0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4M-3-7a3 3 0 0 1 6 0",
+    Venus: "M0 5v-3m-2 1h4M0-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6",
+    Mars: "M-1 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6M2-2l3-3M2-5h3v3",
+    Jupiter: "M-2-4v8M-2 0h5M2-4l-4 4",
+    Saturn: "M-2-4v8M-2 0c4 0 4 4 0 4M-2-2h4"
+};
+const zodiacSigns = [
+    {
+        name: "Aries",
+        angle: 0
+    },
+    {
+        name: "Taurus",
+        angle: 30
+    },
+    {
+        name: "Gemini",
+        angle: 60
+    },
+    {
+        name: "Cancer",
+        angle: 90
+    },
+    {
+        name: "Leo",
+        angle: 120
+    },
+    {
+        name: "Virgo",
+        angle: 150
+    },
+    {
+        name: "Libra",
+        angle: 180
+    },
+    {
+        name: "Scorpio",
+        angle: 210
+    },
+    {
+        name: "Sagittarius",
+        angle: 240
+    },
+    {
+        name: "Capricorn",
+        angle: 270
+    },
+    {
+        name: "Aquarius",
+        angle: 300
+    },
+    {
+        name: "Pisces",
+        angle: 330
+    }
+];
+const planets = [
+    {
+        name: "Sun",
+        angle: 45,
+        radius: 0.7
+    },
+    {
+        name: "Moon",
+        angle: 120,
+        radius: 0.75
+    },
+    {
+        name: "Mercury",
+        angle: 60,
+        radius: 0.5
+    },
+    {
+        name: "Venus",
+        angle: 95,
+        radius: 0.6
+    },
+    {
+        name: "Mars",
+        angle: 280,
+        radius: 0.65
+    },
+    {
+        name: "Jupiter",
+        angle: 200,
+        radius: 0.55
+    },
+    {
+        name: "Saturn",
+        angle: 320,
+        radius: 0.8
+    }
+];
+const aspects = [
+    {
+        from: 0,
+        to: 1,
+        type: "trine"
+    },
+    {
+        from: 0,
+        to: 4,
+        type: "square"
+    },
+    {
+        from: 1,
+        to: 3,
+        type: "sextile"
+    },
+    {
+        from: 2,
+        to: 5,
+        type: "opposition"
+    }
+];
 function StarRadar() {
-    const size = 240;
+    _s();
+    const [viewMode, setViewMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("simple");
+    const size = 300;
     const center = size / 2;
     const maxRadius = size / 2 - 40;
     const polarToCartesian = (angle, radius)=>{
@@ -1439,244 +1622,624 @@ function StarRadar() {
             y: center + radius * Math.sin(rad)
         };
     };
+    // 简约版数据
     const dataPoints = dimensions.map((d)=>polarToCartesian(d.angle, d.value / 100 * maxRadius));
     const pathData = dataPoints.map((p, i)=>`${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+    // 专业版行星位置
+    const planetPositions = planets.map((p)=>({
+            ...p,
+            ...polarToCartesian(p.angle, maxRadius * p.radius)
+        }));
+    const handlePrev = ()=>setViewMode(viewMode === "pro" ? "simple" : "pro");
+    const handleNext = ()=>setViewMode(viewMode === "simple" ? "pro" : "simple");
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "w-full",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mb-6",
+                className: "border hairline border-foreground rounded p-6 bg-background/30 backdrop-blur-sm relative",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                        text: "Stellar Energy Radar",
-                        className: "text-sm font-light opacity-60 mb-2"
-                    }, void 0, false, {
-                        fileName: "[project]/components/star-radar.tsx",
-                        lineNumber: 33,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs opacity-40",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                            text: "Five dimensions of your cosmic energy field"
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: handlePrev,
+                        className: "absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                            width: "16",
+                            height: "16",
+                            viewBox: "0 0 24 24",
+                            fill: "none",
+                            stroke: "currentColor",
+                            strokeWidth: "1.5",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                d: "M15 18l-6-6 6-6"
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 112,
+                                columnNumber: 13
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/star-radar.tsx",
-                            lineNumber: 35,
+                            lineNumber: 111,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/components/star-radar.tsx",
-                        lineNumber: 34,
+                        lineNumber: 107,
                         columnNumber: 9
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/components/star-radar.tsx",
-                lineNumber: 32,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "border hairline border-foreground rounded p-6",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                    width: size,
-                    height: size,
-                    className: "mx-auto",
-                    children: [
-                        [
-                            0.25,
-                            0.5,
-                            0.75,
-                            1
-                        ].map((scale)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("polygon", {
-                                points: dimensions.map((d)=>{
-                                    const p = polarToCartesian(d.angle, maxRadius * scale);
-                                    return `${p.x},${p.y}`;
-                                }).join(" "),
-                                fill: "none",
-                                stroke: "currentColor",
-                                strokeWidth: "0.5",
-                                opacity: "0.1"
-                            }, scale, false, {
-                                fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 43,
-                                columnNumber: 13
-                            }, this)),
-                        dimensions.map((d)=>{
-                            const endpoint = polarToCartesian(d.angle, maxRadius);
-                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
-                                x1: center,
-                                y1: center,
-                                x2: endpoint.x,
-                                y2: endpoint.y,
-                                stroke: "currentColor",
-                                strokeWidth: "0.5",
-                                opacity: "0.2"
-                            }, d.name, false, {
-                                fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 62,
-                                columnNumber: 15
-                            }, this);
-                        }),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                            d: pathData,
-                            fill: "url(#radar-gradient)",
-                            fillOpacity: "0.2",
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: handleNext,
+                        className: "absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                            width: "16",
+                            height: "16",
+                            viewBox: "0 0 24 24",
+                            fill: "none",
                             stroke: "currentColor",
-                            strokeWidth: "1"
+                            strokeWidth: "1.5",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                d: "M9 18l6-6-6-6"
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 122,
+                                columnNumber: 13
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/star-radar.tsx",
-                            lineNumber: 76,
+                            lineNumber: 121,
                             columnNumber: 11
-                        }, this),
-                        dataPoints.map((p, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
-                                cx: p.x,
-                                cy: p.y,
-                                r: "2",
-                                fill: "currentColor"
-                            }, i, false, {
-                                fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 80,
-                                columnNumber: 13
-                            }, this)),
-                        dimensions.map((d)=>{
-                            const labelPos = polarToCartesian(d.angle, maxRadius + 20);
-                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("text", {
-                                x: labelPos.x,
-                                y: labelPos.y,
-                                textAnchor: "middle",
-                                dominantBaseline: "middle",
-                                className: "text-[10px] fill-current",
-                                children: d.name
-                            }, d.name, false, {
-                                fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 87,
-                                columnNumber: 15
-                            }, this);
-                        }),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
-                                id: "radar-gradient",
-                                x1: "0%",
-                                y1: "0%",
-                                x2: "100%",
-                                y2: "100%",
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/star-radar.tsx",
+                        lineNumber: 117,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `transition-all duration-500 ease-out ${viewMode === "simple" ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute inset-0 pointer-events-none"}`,
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                            width: size,
+                            height: size,
+                            className: "mx-auto overflow-visible",
+                            children: [
+                                [
+                                    0.25,
+                                    0.5,
+                                    0.75,
+                                    1
+                                ].map((scale)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("polygon", {
+                                        points: dimensions.map((d)=>{
+                                            const p = polarToCartesian(d.angle, maxRadius * scale);
+                                            return `${p.x},${p.y}`;
+                                        }).join(" "),
+                                        fill: "none",
+                                        stroke: "currentColor",
+                                        strokeWidth: "0.5",
+                                        opacity: "0.1"
+                                    }, scale, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 131,
+                                        columnNumber: 15
+                                    }, this)),
+                                dimensions.map((d)=>{
+                                    const endpoint = polarToCartesian(d.angle, maxRadius);
+                                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                        x1: center,
+                                        y1: center,
+                                        x2: endpoint.x,
+                                        y2: endpoint.y,
+                                        stroke: "currentColor",
+                                        strokeWidth: "0.5",
+                                        opacity: "0.2"
+                                    }, d.name, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 150,
+                                        columnNumber: 17
+                                    }, this);
+                                }),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                    d: pathData,
+                                    fill: "url(#radar-gradient)",
+                                    fillOpacity: "0.15",
+                                    stroke: "currentColor",
+                                    strokeWidth: "1"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/star-radar.tsx",
+                                    lineNumber: 164,
+                                    columnNumber: 13
+                                }, this),
+                                dataPoints.map((p, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                        cx: p.x,
+                                        cy: p.y,
+                                        r: "1.5",
+                                        fill: "currentColor"
+                                    }, i, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 168,
+                                        columnNumber: 15
+                                    }, this)),
+                                dimensions.map((d)=>{
+                                    const labelPos = polarToCartesian(d.angle, maxRadius + 28);
+                                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("text", {
+                                        x: labelPos.x,
+                                        y: labelPos.y,
+                                        textAnchor: "middle",
+                                        dominantBaseline: "middle",
+                                        className: "text-[9px] uppercase tracking-wider fill-current font-light",
+                                        children: d.name
+                                    }, d.name, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 175,
+                                        columnNumber: 17
+                                    }, this);
+                                }),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
+                                        id: "radar-gradient",
+                                        x1: "0%",
+                                        y1: "0%",
+                                        x2: "100%",
+                                        y2: "100%",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                offset: "0%",
+                                                stopColor: "#E0C3FC"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 190,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                offset: "100%",
+                                                stopColor: "#8EC5FC"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 191,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 189,
+                                        columnNumber: 15
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/components/star-radar.tsx",
+                                    lineNumber: 188,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/components/star-radar.tsx",
+                            lineNumber: 128,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/components/star-radar.tsx",
+                        lineNumber: 127,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `transition-all duration-500 ease-out ${viewMode === "pro" ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute inset-0 pointer-events-none"}`,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                width: size,
+                                height: size,
+                                className: "mx-auto overflow-visible",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
-                                        offset: "0%",
-                                        stopColor: "#E0C3FC"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
+                                            id: "pro-bg-gradient",
+                                            x1: "0%",
+                                            y1: "0%",
+                                            x2: "100%",
+                                            y2: "100%",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                    offset: "0%",
+                                                    stopColor: "currentColor",
+                                                    stopOpacity: "0.03"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/star-radar.tsx",
+                                                    lineNumber: 202,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                                    offset: "100%",
+                                                    stopColor: "currentColor",
+                                                    stopOpacity: "0.08"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/star-radar.tsx",
+                                                    lineNumber: 203,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 201,
+                                            columnNumber: 15
+                                        }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/star-radar.tsx",
-                                        lineNumber: 102,
-                                        columnNumber: 15
+                                        lineNumber: 200,
+                                        columnNumber: 13
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
-                                        offset: "100%",
-                                        stopColor: "#8EC5FC"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                        cx: center,
+                                        cy: center,
+                                        r: maxRadius + 12,
+                                        fill: "none",
+                                        stroke: "currentColor",
+                                        strokeWidth: "0.5"
                                     }, void 0, false, {
                                         fileName: "[project]/components/star-radar.tsx",
-                                        lineNumber: 103,
-                                        columnNumber: 15
+                                        lineNumber: 208,
+                                        columnNumber: 13
+                                    }, this),
+                                    Array.from({
+                                        length: 72
+                                    }).map((_, i)=>{
+                                        const angle = i * 5;
+                                        const isMajor = i % 6 === 0;
+                                        const p1 = polarToCartesian(angle, maxRadius + (isMajor ? 8 : 4));
+                                        const p2 = polarToCartesian(angle, maxRadius);
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                            x1: p1.x,
+                                            y1: p1.y,
+                                            x2: p2.x,
+                                            y2: p2.y,
+                                            stroke: "currentColor",
+                                            strokeWidth: "0.5",
+                                            opacity: isMajor ? 1 : 0.3
+                                        }, i, false, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 217,
+                                            columnNumber: 17
+                                        }, this);
+                                    }),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                        cx: center,
+                                        cy: center,
+                                        r: maxRadius,
+                                        fill: "url(#pro-bg-gradient)",
+                                        stroke: "currentColor",
+                                        strokeWidth: "1"
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 222,
+                                        columnNumber: 13
+                                    }, this),
+                                    zodiacSigns.map((sign)=>{
+                                        const outer = polarToCartesian(sign.angle, maxRadius);
+                                        const inner = polarToCartesian(sign.angle, maxRadius * 0.25);
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                            x1: inner.x,
+                                            y1: inner.y,
+                                            x2: outer.x,
+                                            y2: outer.y,
+                                            stroke: "currentColor",
+                                            strokeWidth: "0.5"
+                                        }, sign.name, false, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 236,
+                                            columnNumber: 17
+                                        }, this);
+                                    }),
+                                    [
+                                        0.35,
+                                        0.55,
+                                        0.75
+                                    ].map((scale)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                            cx: center,
+                                            cy: center,
+                                            r: maxRadius * scale,
+                                            fill: "none",
+                                            stroke: "currentColor",
+                                            strokeWidth: "0.5",
+                                            strokeDasharray: "1 6"
+                                        }, scale, false, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 250,
+                                            columnNumber: 15
+                                        }, this)),
+                                    aspects.map((aspect, i)=>{
+                                        const from = planetPositions[aspect.from];
+                                        const to = planetPositions[aspect.to];
+                                        const color = aspect.type === "square" ? "#FF6B6B" : aspect.type === "opposition" ? "#FFE66D" : aspect.type === "trine" ? "#96E6A1" : "#8EC5FC";
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("line", {
+                                            x1: from.x,
+                                            y1: from.y,
+                                            x2: to.x,
+                                            y2: to.y,
+                                            stroke: color,
+                                            strokeWidth: "0.8",
+                                            opacity: "0.25"
+                                        }, i, false, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 270,
+                                            columnNumber: 17
+                                        }, this);
+                                    }),
+                                    zodiacSigns.map((sign)=>{
+                                        const pos = polarToCartesian(sign.angle + 15, maxRadius * 0.88);
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("g", {
+                                            transform: `translate(${pos.x},${pos.y}) scale(0.8)`,
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                d: ZODIAC_ICONS[sign.name],
+                                                fill: "none",
+                                                stroke: "currentColor",
+                                                strokeWidth: "1",
+                                                strokeLinecap: "round"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 288,
+                                                columnNumber: 19
+                                            }, this)
+                                        }, sign.name, false, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 287,
+                                            columnNumber: 17
+                                        }, this);
+                                    }),
+                                    planetPositions.map((planet)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("g", {
+                                            transform: `translate(${planet.x},${planet.y})`,
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                                    r: "10",
+                                                    fill: "var(--background)",
+                                                    stroke: "currentColor",
+                                                    strokeWidth: "1"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/star-radar.tsx",
+                                                    lineNumber: 296,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("g", {
+                                                    scale: "0.7",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: PLANET_ICONS[planet.name],
+                                                        fill: "none",
+                                                        stroke: "currentColor",
+                                                        strokeWidth: "1.5",
+                                                        strokeLinecap: "round"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/star-radar.tsx",
+                                                        lineNumber: 298,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/star-radar.tsx",
+                                                    lineNumber: 297,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                                    r: "10",
+                                                    fill: "transparent",
+                                                    className: "cursor-help group",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("title", {
+                                                        children: planet.name
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/star-radar.tsx",
+                                                        lineNumber: 302,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/star-radar.tsx",
+                                                    lineNumber: 301,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, planet.name, true, {
+                                            fileName: "[project]/components/star-radar.tsx",
+                                            lineNumber: 295,
+                                            columnNumber: 15
+                                        }, this)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                                        cx: center,
+                                        cy: center,
+                                        r: "2",
+                                        fill: "currentColor"
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 308,
+                                        columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 101,
-                                columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/components/star-radar.tsx",
-                            lineNumber: 100,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/components/star-radar.tsx",
-                    lineNumber: 40,
-                    columnNumber: 9
-                }, this)
-            }, void 0, false, {
-                fileName: "[project]/components/star-radar.tsx",
-                lineNumber: 39,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-6 space-y-3",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-start gap-3 text-xs",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "opacity-40 shrink-0",
-                                children: "Alert"
-                            }, void 0, false, {
-                                fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 112,
+                                lineNumber: 199,
                                 columnNumber: 11
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "font-light leading-relaxed",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                                    text: "Mercury retrograde affecting Intellect dimension until Feb 3"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/star-radar.tsx",
-                                    lineNumber: 114,
-                                    columnNumber: 13
-                                }, this)
-                            }, void 0, false, {
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[8px] uppercase tracking-widest text-foreground font-mono",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex items-center gap-1.5",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "w-2.5 h-[1px] bg-[#96E6A1]"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 314,
+                                                columnNumber: 15
+                                            }, this),
+                                            " Trine"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 313,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex items-center gap-1.5",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "w-2.5 h-[1px] bg-[#FF6B6B]"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 317,
+                                                columnNumber: 15
+                                            }, this),
+                                            " Square"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 316,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex items-center gap-1.5",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "w-2.5 h-[1px] bg-[#8EC5FC]"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 320,
+                                                columnNumber: 15
+                                            }, this),
+                                            " Sextile"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 319,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex items-center gap-1.5",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "w-2.5 h-[1px] bg-[#FFE66D]"
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/star-radar.tsx",
+                                                lineNumber: 323,
+                                                columnNumber: 15
+                                            }, this),
+                                            " Opposition"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/star-radar.tsx",
+                                        lineNumber: 322,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
                                 fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 113,
+                                lineNumber: 312,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/star-radar.tsx",
-                        lineNumber: 111,
+                        lineNumber: 198,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-start gap-3 text-xs",
+                        className: "flex items-center justify-center gap-3 mt-8",
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "opacity-40 shrink-0",
-                                children: "Peak"
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>setViewMode("simple"),
+                                className: `h-0.5 rounded-full transition-all duration-500 ${viewMode === "simple" ? "w-8 bg-foreground opacity-100" : "w-4 bg-foreground/20 opacity-40 hover:opacity-60"}`
                             }, void 0, false, {
                                 fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 118,
+                                lineNumber: 330,
                                 columnNumber: 11
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "font-light leading-relaxed",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                                    text: "Spirit energy at highest point this month - ideal for manifestation"
-                                }, void 0, false, {
-                                    fileName: "[project]/components/star-radar.tsx",
-                                    lineNumber: 120,
-                                    columnNumber: 13
-                                }, this)
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>setViewMode("pro"),
+                                className: `h-0.5 rounded-full transition-all duration-500 ${viewMode === "pro" ? "w-8 bg-foreground opacity-100" : "w-4 bg-foreground/20 opacity-40 hover:opacity-60"}`
                             }, void 0, false, {
                                 fileName: "[project]/components/star-radar.tsx",
-                                lineNumber: 119,
+                                lineNumber: 336,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/star-radar.tsx",
-                        lineNumber: 117,
+                        lineNumber: 329,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/star-radar.tsx",
-                lineNumber: 110,
+                lineNumber: 105,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "mt-8 space-y-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4 text-xs group",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0",
+                                children: "Alert"
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 348,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-light leading-relaxed text-foreground",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                    text: "Mercury retrograde affecting Intellect dimension until Feb 3"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/star-radar.tsx",
+                                    lineNumber: 350,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 349,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/star-radar.tsx",
+                        lineNumber: 347,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4 text-xs group",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0",
+                                children: "Peak"
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 354,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-light leading-relaxed text-foreground",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                    text: "Spirit energy at highest point this month - ideal for manifestation"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/star-radar.tsx",
+                                    lineNumber: 356,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/components/star-radar.tsx",
+                                lineNumber: 355,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/star-radar.tsx",
+                        lineNumber: 353,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/star-radar.tsx",
+                lineNumber: 346,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/star-radar.tsx",
-        lineNumber: 31,
+        lineNumber: 104,
         columnNumber: 5
     }, this);
 }
+_s(StarRadar, "XtTxH+OHouEySSH07LeCueV50LQ=");
 _c = StarRadar;
 var _c;
 __turbopack_context__.k.register(_c, "StarRadar");
@@ -1711,7 +2274,6 @@ var _s = __turbopack_context__.k.signature();
 ;
 function DestinyPage() {
     _s();
-    const [activeView, setActiveView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("destiny");
     const [destinyMode, setDestinyMode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("today");
     const [cardRevealed, setCardRevealed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [selectedHour, setSelectedHour] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -1722,58 +2284,58 @@ function DestinyPage() {
                 className: "p-6 pt-12 max-w-screen-sm mx-auto",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "mb-12",
+                        className: "mb-8",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                                 className: "text-4xl font-light mb-2",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                                    text: "Destiny"
+                                    text: "Destiny Trending"
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.tsx",
-                                    lineNumber: 25,
+                                    lineNumber: 24,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 24,
+                                lineNumber: 23,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-sm opacity-60 font-light",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
-                                    text: "Tune your destiny frequency"
+                                    text: "Your today's fortune curve and life fortune curve"
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.tsx",
-                                    lineNumber: 28,
+                                    lineNumber: 27,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 27,
+                                lineNumber: 26,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 23,
+                        lineNumber: 22,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex gap-0 border hairline border-foreground rounded mb-8",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                onClick: ()=>setActiveView("destiny"),
-                                className: `flex-1 py-3 text-sm font-light border-r hairline border-foreground transition-colors ${activeView === "destiny" ? "bg-foreground text-background" : "hover:bg-muted"}`,
-                                children: "Destiny Line"
+                                onClick: ()=>setDestinyMode("today"),
+                                className: `flex-1 py-3 text-sm font-light border-r hairline border-foreground transition-colors ${destinyMode === "today" ? "bg-foreground text-background" : "hover:bg-muted"}`,
+                                children: "Today Trending"
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
                                 lineNumber: 33,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                onClick: ()=>setActiveView("stars"),
-                                className: `flex-1 py-3 text-sm font-light transition-colors ${activeView === "stars" ? "bg-foreground text-background" : "hover:bg-muted"}`,
-                                children: "Stars"
+                                onClick: ()=>setDestinyMode("life"),
+                                className: `flex-1 py-3 text-sm font-light transition-colors ${destinyMode === "life" ? "bg-foreground text-background" : "hover:bg-muted"}`,
+                                children: "Life Trending"
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
                                 lineNumber: 41,
@@ -1785,48 +2347,8 @@ function DestinyPage() {
                         lineNumber: 32,
                         columnNumber: 9
                     }, this),
-                    activeView === "destiny" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center justify-end gap-3 mb-6",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: `text-xs font-light transition-opacity ${destinyMode === "today" ? "opacity-100" : "opacity-40"}`,
-                                children: "Today"
-                            }, void 0, false, {
-                                fileName: "[project]/app/page.tsx",
-                                lineNumber: 53,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                onClick: ()=>setDestinyMode(destinyMode === "today" ? "life" : "today"),
-                                className: "relative w-12 h-6 border hairline border-foreground rounded-full transition-colors",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: `absolute top-0.5 w-5 h-5 rounded-full border hairline border-foreground bg-background transition-all ${destinyMode === "life" ? "left-6 holographic" : "left-0.5"}`
-                                }, void 0, false, {
-                                    fileName: "[project]/app/page.tsx",
-                                    lineNumber: 62,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/page.tsx",
-                                lineNumber: 58,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: `text-xs font-light transition-opacity ${destinyMode === "life" ? "opacity-100" : "opacity-40"}`,
-                                children: "Life"
-                            }, void 0, false, {
-                                fileName: "[project]/app/page.tsx",
-                                lineNumber: 68,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/app/page.tsx",
-                        lineNumber: 52,
-                        columnNumber: 11
-                    }, this),
-                    activeView === "destiny" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "relative",
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "relative mb-6",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "space-y-8",
@@ -1838,8 +2360,8 @@ function DestinyPage() {
                                         onSelectHour: setSelectedHour
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 80,
-                                        columnNumber: 15
+                                        lineNumber: 54,
+                                        columnNumber: 13
                                     }, this),
                                     (cardRevealed || destinyMode === "life") && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "animate-fade-in",
@@ -1851,19 +2373,19 @@ function DestinyPage() {
                                             onSelectHour: setSelectedHour
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.tsx",
-                                            lineNumber: 90,
-                                            columnNumber: 19
+                                            lineNumber: 64,
+                                            columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 89,
-                                        columnNumber: 17
+                                        lineNumber: 63,
+                                        columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 79,
-                                columnNumber: 13
+                                lineNumber: 53,
+                                columnNumber: 11
                             }, this),
                             destinyMode === "today" && !cardRevealed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "absolute inset-0 flex items-center justify-center z-20 bg-background/20 backdrop-blur-sm pointer-events-none",
@@ -1873,55 +2395,95 @@ function DestinyPage() {
                                         onReveal: ()=>setCardRevealed(true)
                                     }, void 0, false, {
                                         fileName: "[project]/app/page.tsx",
-                                        lineNumber: 102,
-                                        columnNumber: 19
+                                        lineNumber: 76,
+                                        columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.tsx",
-                                    lineNumber: 101,
-                                    columnNumber: 17
+                                    lineNumber: 75,
+                                    columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/page.tsx",
-                                lineNumber: 100,
-                                columnNumber: 15
+                                lineNumber: 74,
+                                columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 78,
-                        columnNumber: 11
+                        lineNumber: 52,
+                        columnNumber: 9
                     }, this),
-                    activeView === "stars" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$star$2d$radar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StarRadar"], {}, void 0, false, {
-                            fileName: "[project]/app/page.tsx",
-                            lineNumber: 111,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mt-6",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mb-8",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                                        className: "text-4xl font-light mb-2",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                            text: "Stars"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/page.tsx",
+                                            lineNumber: 86,
+                                            columnNumber: 15
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/page.tsx",
+                                        lineNumber: 85,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-sm opacity-60 font-light",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ink$2d$reveal$2d$text$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InkRevealText"], {
+                                            text: "Your celestial alignment and cosmic energy"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/page.tsx",
+                                            lineNumber: 89,
+                                            columnNumber: 15
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/page.tsx",
+                                        lineNumber: 88,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/page.tsx",
+                                lineNumber: 84,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$star$2d$radar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StarRadar"], {}, void 0, false, {
+                                fileName: "[project]/app/page.tsx",
+                                lineNumber: 92,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/app/page.tsx",
-                        lineNumber: 110,
-                        columnNumber: 11
+                        lineNumber: 83,
+                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 21,
+                lineNumber: 20,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$bottom$2d$nav$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["BottomNav"], {}, void 0, false, {
                 fileName: "[project]/app/page.tsx",
-                lineNumber: 116,
+                lineNumber: 96,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/page.tsx",
-        lineNumber: 20,
+        lineNumber: 19,
         columnNumber: 5
     }, this);
 }
-_s(DestinyPage, "wZqTU5moyz3IBDRq1VTjad8WAeo=");
+_s(DestinyPage, "Ky7xr7JmHc4ZUN5jIpoktycXwCI=");
 _c = DestinyPage;
 var _c;
 __turbopack_context__.k.register(_c, "DestinyPage");
