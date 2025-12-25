@@ -7,7 +7,7 @@ export default function StonePage() {
     <main className="min-h-screen bg-background pb-20">
       <div className="p-6 pt-12 max-w-screen-sm mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-light mb-4">
+          <h1 className="text-4xl font-light mb-4">
             <InkRevealText text="The Fate Stone" />
           </h1>
           <p className="text-xs opacity-60 font-light tracking-wide">

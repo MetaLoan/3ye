@@ -145,6 +145,9 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
   const [hintMode, setHintMode] = useState<"idle" | "fadein" | "fadeaway">("idle") // 顶部提示文字动画模式
   const [warpSpeed, setWarpSpeed] = useState(1) // 星际穿越速度倍数
   const [colorMode, setColorMode] = useState<"normal" | "rainbow" | "fading">("normal") // 粒子颜色模式
+  const [energyValue, setEnergyValue] = useState<number>(50) // 目标能量值
+  const [displayEnergy, setDisplayEnergy] = useState<number>(50) // 显示的能量值（用于丝滑动画）
+  const displayEnergyRef = useRef<number>(50) // 用于动画的 ref
   
   // 卡片界面高度（与图表区域高度一致）
   const cardContainerHeight = 263 // StarfieldEffect canvas 的高度
@@ -241,26 +244,32 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
           // 速度达到10X后，晃动停止，卡片静止一下
           setIsShaking(false)
           
-          // 停顿 0.4s 后再翻转，让用户看清卡片停下来
+          // 停顿 10ms 后开始翻转
           setTimeout(() => {
             setIsFlipping(true)
-            setIsFlipped(true) // 标记为已翻转（保持翻转状态）
             
-            // 翻转后开始彩色粒子渐变回白色 (2秒内完成)
-            setColorMode("fading")
+            // 下一帧再设置 isFlipped，确保 transition 生效
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                setIsFlipped(true) // 触发翻转动画
+                
+                // 翻转后开始彩色粒子渐变消失
+                setColorMode("fading")
+              })
+            })
             
-            // 翻转动画完成后 (0.6s)
+            // 翻转动画完成后 (0.5s)
             setTimeout(() => {
               setIsFlipping(false) // 动画结束，但 isFlipped 保持 true
               
-              // 粒子变白后（翻转后2秒），显示解读文字
+              // 粒子淡出后，显示解读文字
               setTimeout(() => {
                 setShowReading(true)
                 setReadingMode("fadein") // 文字逐字出现
-              }, 1400) // 0.6s翻转 + 1.4s = 2s 粒子变白
+              }, 1500)
               
-            }, 600)
-          }, 400)
+            }, 500)
+          }, 10)
         }
       }
       
@@ -333,6 +342,65 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
   }, [now, nextHour])
 
   const data = useMemo(() => generateData(mode === "today" ? 1 : 2), [mode])
+
+  // 能量值实时波动效果
+  useEffect(() => {
+    if (!showChart) return
+    
+    // 计算基准能量值
+    const getBaseEnergy = () => {
+      const currentDataPoint = data.find(d => d.hour === currentHour)
+      if (currentDataPoint) return currentDataPoint.value
+      const prevPoint = data.find(d => d.hour <= currentHour)
+      const nextPoint = data.find(d => d.hour > currentHour)
+      if (prevPoint && nextPoint) {
+        const ratio = (currentHour - prevPoint.hour) / (nextPoint.hour - prevPoint.hour)
+        return prevPoint.value + (nextPoint.value - prevPoint.value) * ratio
+      }
+      return data[0]?.value || 50
+    }
+    
+    const baseEnergy = getBaseEnergy()
+    setEnergyValue(baseEnergy)
+    
+    // 每1000ms更新一次，模拟小幅波动
+    const fluctuationTimer = setInterval(() => {
+      const fluctuation = (Math.random() - 0.5) * 2 // -1 到 +1 的波动
+      setEnergyValue(prev => {
+        // 限制波动范围在基准值 ±3 内，并确保不超出0-100
+        const newValue = prev + fluctuation * 0.5
+        const minBound = Math.max(0, baseEnergy - 3)
+        const maxBound = Math.min(100, baseEnergy + 3)
+        return Math.max(minBound, Math.min(maxBound, newValue))
+      })
+    }, 1000)
+    
+    return () => clearInterval(fluctuationTimer)
+  }, [showChart, data, currentHour])
+
+  // 丝滑数字过渡动画
+  useEffect(() => {
+    let animationId: number
+    const animate = () => {
+      const current = displayEnergyRef.current
+      const target = energyValue
+      const diff = target - current
+      
+      // 使用 lerp（线性插值）实现丝滑过渡
+      if (Math.abs(diff) > 0.001) {
+        const newValue = current + diff * 0.1 // 每帧移动 10% 的差距
+        displayEnergyRef.current = newValue
+        setDisplayEnergy(newValue)
+        animationId = requestAnimationFrame(animate)
+      } else {
+        displayEnergyRef.current = target
+        setDisplayEnergy(target)
+      }
+    }
+    
+    animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
+  }, [energyValue])
 
   const { pastPathData, futurePathData, areaPathData, points } = useMemo(() => {
     if (!data.length) return { pastPathData: "", futurePathData: "", areaPathData: "", points: [] }
@@ -499,7 +567,10 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
               }}
             >
               {/* 三张卡片 */}
-              <div className="flex items-center justify-center gap-3 relative w-full" style={{ height: `${height}px` }}>
+              <div 
+                className="flex items-center justify-center gap-3 relative w-full" 
+                style={{ height: `${height}px`, perspective: '1000px' }}
+              >
                 {cards.length > 0 && cards.map((card, index) => {
                   const isSelected = selectedCard === index
                   const isOther = selectedCard !== null && selectedCard !== index
@@ -560,7 +631,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                   // 漂浮动画名称
                   const floatAnimName = `card-float-${index}`
                   
-                  // 选中卡片的动画：漂浮 -> 晃动
+                  // 选中卡片的动画：漂浮 -> 晃动 -> 翻转
                   let cardAnimation = 'none'
                   if (selectedCard === null && animParams) {
                     // 未选中：漂浮动画
@@ -570,6 +641,11 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                     cardAnimation = isMiddleCard 
                       ? 'card-shake-center 0.08s ease-in-out infinite'
                       : 'card-shake 0.08s ease-in-out infinite'
+                  } else if (isSelected && isFlipping) {
+                    // 翻转动画
+                    cardAnimation = isMiddleCard
+                      ? 'card-flip-center 0.5s ease-out forwards'
+                      : 'card-flip 0.5s ease-out forwards'
                   }
                   
                   return (
@@ -586,7 +662,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                         zIndex: isSelected ? 10 : 1,
                         opacity: isOther && isOthersHiding ? 0 : 1,
                         filter: isOther && isOthersHiding ? 'blur(10px)' : 'none',
-                        transition: isShaking ? 'none' : (isFlipping ? 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'),
+                        transition: isShaking ? 'none' : (isFlipping ? 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'),
                         animation: cardAnimation
                       }}
                     >
@@ -674,22 +750,11 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
             <div className="mb-6 pb-4 border-b-[0.5px] border-foreground/10">
               <div className="flex items-baseline justify-between mb-2">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-light text-foreground tabular-nums">
-                    {(() => {
-                      // 计算当前时间的能量值（基于当前小时的数据点）
-                      const currentDataPoint = data.find(d => d.hour === currentHour)
-                      if (currentDataPoint) {
-                        return Math.round(currentDataPoint.value)
-                      }
-                      // 如果没有精确匹配，使用插值
-                      const prevPoint = data.find(d => d.hour <= currentHour)
-                      const nextPoint = data.find(d => d.hour > currentHour)
-                      if (prevPoint && nextPoint) {
-                        const ratio = (currentHour - prevPoint.hour) / (nextPoint.hour - prevPoint.hour)
-                        return Math.round(prevPoint.value + (nextPoint.value - prevPoint.value) * ratio)
-                      }
-                      return Math.round(data[0]?.value || 50)
-                    })()}
+                  <span 
+                    className="text-3xl font-light text-foreground"
+                    style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}
+                  >
+                    {displayEnergy.toFixed(2)}
                   </span>
                   <span className="text-xs text-foreground/60 uppercase tracking-wider">Energy Field</span>
                 </div>
@@ -889,6 +954,26 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
           }
           87.5% { 
             transform: rotate(-3deg) translateY(-1px) translateX(2px); 
+          }
+        }
+        
+        /* 卡片翻转动画 - 需要居中的卡片 */
+        @keyframes card-flip {
+          0% { 
+            transform: translateX(-50%) rotateY(0deg); 
+          }
+          100% { 
+            transform: translateX(-50%) rotateY(180deg); 
+          }
+        }
+        
+        /* 卡片翻转动画 - 中间卡片 */
+        @keyframes card-flip-center {
+          0% { 
+            transform: rotateY(0deg); 
+          }
+          100% { 
+            transform: rotateY(180deg); 
           }
         }
       `}</style>

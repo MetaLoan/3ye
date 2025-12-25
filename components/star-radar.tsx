@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { InkRevealText } from "./ink-reveal-text"
 
-const dimensions = [
+const baseDimensions = [
   { name: "Passion", value: 75, angle: 0 },
   { name: "Love", value: 60, angle: 72 },
   { name: "Wealth", value: 85, angle: 144 },
@@ -74,6 +74,31 @@ type ViewMode = "simple" | "pro"
 
 export function StarRadar() {
   const [viewMode, setViewMode] = useState<ViewMode>("simple")
+  const [time, setTime] = useState(0)
+  
+  // 添加随机抖动到数值
+  const dimensions = useMemo(() => {
+    return baseDimensions.map((d, i) => {
+      // 每个维度使用不同的随机种子，基于时间和索引
+      // 使用多个正弦波叠加产生更自然的抖动
+      const t = time * 0.1
+      const noise1 = Math.sin(t * 0.5 + i * 1.2) * 2.5
+      const noise2 = Math.cos(t * 0.7 + i * 0.8) * 1.5
+      const noise3 = Math.sin(t * 1.1 + i * 2.1) * 1.0
+      const jitter = (noise1 + noise2 + noise3) * 0.5 // 抖动幅度约 ±2.5%
+      const newValue = Math.max(0, Math.min(100, d.value + jitter))
+      return { ...d, value: newValue }
+    })
+  }, [time])
+  
+  // 定期更新抖动
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prev => prev + 1)
+    }, 50) // 每50ms更新一次，产生更平滑的抖动效果
+    
+    return () => clearInterval(interval)
+  }, [])
   
   const size = 300
   const center = size / 2
@@ -82,8 +107,8 @@ export function StarRadar() {
   const polarToCartesian = (angle: number, radius: number) => {
     const rad = ((angle - 90) * Math.PI) / 180
     return {
-      x: center + radius * Math.cos(rad),
-      y: center + radius * Math.sin(rad),
+      x: Math.round((center + radius * Math.cos(rad)) * 100) / 100,
+      y: Math.round((center + radius * Math.sin(rad)) * 100) / 100,
     }
   }
 
@@ -97,12 +122,55 @@ export function StarRadar() {
     ...polarToCartesian(p.angle, maxRadius * p.radius),
   }))
 
+  const handlePrev = () => setViewMode(viewMode === "pro" ? "simple" : "pro")
+  const handleNext = () => setViewMode(viewMode === "simple" ? "pro" : "simple")
+
   return (
     <div className="w-full">
-      <div className="border hairline border-foreground rounded p-6 bg-background/30 backdrop-blur-sm">
-        {/* 简约版星盘 */}
-        {viewMode === "simple" && (
-          <svg width={size} height={size} className="mx-auto overflow-visible">
+      <div 
+        className="box-frame p-6 relative overflow-hidden"
+        style={{
+          transition: 'all 0.5s ease-out'
+        }}
+      >
+        {/* Left Arrow */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-foreground text-background flex items-center justify-center hover:opacity-80 transition-opacity z-50"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        {/* Right Arrow */}
+        <button
+          onClick={handleNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-foreground text-background flex items-center justify-center hover:opacity-80 transition-opacity z-50"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+
+        {/* 视图容器 - 使用固定高度实现平滑过渡 */}
+        <div 
+          className="relative overflow-hidden"
+          style={{ 
+            height: viewMode === "simple" ? `${size}px` : `${size + 60}px`, // 专业版有图例，需要更多高度
+            transition: 'height 0.5s ease-out'
+          }}
+        >
+          {/* 简约版星盘 */}
+          <div 
+            className="absolute inset-0 transition-all duration-500 ease-out"
+            style={{
+              opacity: viewMode === "simple" ? 1 : 0,
+              transform: viewMode === "simple" ? 'translateX(0)' : 'translateX(-30px)',
+              pointerEvents: viewMode === "simple" ? 'auto' : 'none'
+            }}
+          >
+            <svg width={size} height={size} className="mx-auto overflow-visible">
             {/* Background rings */}
             {[0.25, 0.5, 0.75, 1].map((scale) => (
               <polygon
@@ -155,7 +223,7 @@ export function StarRadar() {
                   y={labelPos.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[9px] uppercase tracking-wider fill-current font-light opacity-60"
+                  className="text-[9px] uppercase tracking-wider fill-current font-light"
                 >
                   {d.name}
                 </text>
@@ -169,10 +237,17 @@ export function StarRadar() {
               </linearGradient>
             </defs>
           </svg>
-        )}
+        </div>
 
-        {/* 专业版星盘 */}
-        {viewMode === "pro" && (
+          {/* 专业版星盘 */}
+          <div 
+            className="absolute inset-0 transition-all duration-500 ease-out"
+            style={{
+              opacity: viewMode === "pro" ? 1 : 0,
+              transform: viewMode === "pro" ? 'translateX(0)' : 'translateX(30px)',
+              pointerEvents: viewMode === "pro" ? 'auto' : 'none'
+            }}
+          >
           <svg width={size} height={size} className="mx-auto overflow-visible">
             <defs>
               <linearGradient id="pro-bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -182,7 +257,7 @@ export function StarRadar() {
             </defs>
 
             {/* 外圈装饰 */}
-            <circle cx={center} cy={center} r={maxRadius + 12} fill="none" stroke="currentColor" strokeWidth="0.3" opacity="0.1" />
+            <circle cx={center} cy={center} r={maxRadius + 12} fill="none" stroke="currentColor" strokeWidth="0.5" />
             
             {/* 刻度圈 */}
             {Array.from({ length: 72 }).map((_, i) => {
@@ -191,7 +266,7 @@ export function StarRadar() {
               const p1 = polarToCartesian(angle, maxRadius + (isMajor ? 8 : 4))
               const p2 = polarToCartesian(angle, maxRadius)
               return (
-                <line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="currentColor" strokeWidth="0.5" opacity={isMajor ? 0.3 : 0.1} />
+                <line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="currentColor" strokeWidth="0.5" opacity={isMajor ? 1 : 0.3} />
               )
             })}
 
@@ -202,8 +277,7 @@ export function StarRadar() {
               r={maxRadius}
               fill="url(#pro-bg-gradient)"
               stroke="currentColor"
-              strokeWidth="0.8"
-              opacity="0.4"
+              strokeWidth="1"
             />
 
             {/* 12宫位分割 */}
@@ -219,7 +293,6 @@ export function StarRadar() {
                   y2={outer.y}
                   stroke="currentColor"
                   strokeWidth="0.5"
-                  opacity="0.15"
                 />
               )
             })}
@@ -234,7 +307,6 @@ export function StarRadar() {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="0.5"
-                opacity="0.08"
                 strokeDasharray="1 6"
               />
             ))}
@@ -264,7 +336,7 @@ export function StarRadar() {
             {zodiacSigns.map((sign) => {
               const pos = polarToCartesian(sign.angle + 15, maxRadius * 0.88)
               return (
-                <g key={sign.name} transform={`translate(${pos.x},${pos.y}) scale(0.8)`} className="opacity-40">
+                <g key={sign.name} transform={`translate(${pos.x},${pos.y}) scale(0.8)`}>
                   <path d={ZODIAC_ICONS[sign.name]} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
                 </g>
               )
@@ -273,9 +345,9 @@ export function StarRadar() {
             {/* 行星图标 */}
             {planetPositions.map((planet) => (
               <g key={planet.name} transform={`translate(${planet.x},${planet.y})`}>
-                <circle r="10" fill="var(--background)" stroke="currentColor" strokeWidth="0.5" opacity="0.9" />
+                <circle r="10" fill="var(--background)" stroke="currentColor" strokeWidth="1" />
                 <g scale="0.7">
-                  <path d={PLANET_ICONS[planet.name]} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" className="opacity-80" />
+                  <path d={PLANET_ICONS[planet.name]} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </g>
                 {/* 行星名称悬停提示 (模拟) */}
                 <circle r="10" fill="transparent" className="cursor-help group">
@@ -285,13 +357,11 @@ export function StarRadar() {
             ))}
 
             {/* 核心原点 */}
-            <circle cx={center} cy={center} r="2" fill="currentColor" opacity="0.4" />
+            <circle cx={center} cy={center} r="2" fill="currentColor" />
           </svg>
-        )}
 
-        {/* 专业版图例 */}
-        {viewMode === "pro" && (
-          <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[8px] uppercase tracking-widest opacity-40 font-mono">
+          {/* 专业版图例 */}
+          <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[8px] uppercase tracking-widest text-foreground font-mono">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-[1px] bg-[#96E6A1]" /> Trine
             </span>
@@ -305,23 +375,9 @@ export function StarRadar() {
               <span className="w-2.5 h-[1px] bg-[#FFE66D]" /> Opposition
             </span>
           </div>
-        )}
-
-        {/* 切换指示器 - 极简线条 */}
-        <div className="flex items-center justify-center gap-3 mt-8">
-          <button
-            onClick={() => setViewMode("simple")}
-            className={`h-0.5 rounded-full transition-all duration-500 ${
-              viewMode === "simple" ? "w-8 bg-foreground opacity-100" : "w-4 bg-foreground/20 opacity-40 hover:opacity-60"
-            }`}
-          />
-          <button
-            onClick={() => setViewMode("pro")}
-            className={`h-0.5 rounded-full transition-all duration-500 ${
-              viewMode === "pro" ? "w-8 bg-foreground opacity-100" : "w-4 bg-foreground/20 opacity-40 hover:opacity-60"
-            }`}
-          />
+          </div>
         </div>
+
       </div>
 
       {/* Current alerts */}

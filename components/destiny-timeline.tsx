@@ -127,7 +127,7 @@ export function DestinyTimeline({ selectedHour, onSelectHour }: DestinyTimelineP
       {selectedItem && (
         <div className="relative mb-4 animate-fade-in">
           {/* Content Card */}
-          <div className="max-w-md mx-auto p-4 bg-background border-[0.5px] border-foreground rounded-sm">
+          <div className="max-w-md mx-auto p-4 box-frame">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground">
                 {selectedItem.type}
