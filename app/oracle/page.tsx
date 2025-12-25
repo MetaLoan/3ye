@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/bottom-nav"
 import { InkRevealText } from "@/components/ink-reveal-text"
 import { ChatMessage } from "@/components/chat-message"
 import { OracleInteractiveEye } from "@/components/oracle-interactive-eye"
+import { OracleThinking } from "@/components/oracle-thinking"
 
 const initialMessages = [
   {
@@ -22,6 +23,7 @@ export default function OraclePage() {
   const [input, setInput] = useState("")
   const [eyeDirection, setEyeDirection] = useState<"down" | "down-right" | "down-left" | "center">("center")
   const [isInputFocused, setIsInputFocused] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const eyeTimerRef = useRef<NodeJS.Timeout>()
 
   // 根据输入框焦点状态改变眼睛方向
@@ -53,8 +55,17 @@ export default function OraclePage() {
       setEyeDirection("center")
     }, 1500)
 
-    // Simulate AI response
+    // 显示思考动画5秒
     setTimeout(() => {
+      setIsThinking(true)
+      // 眼睛向下看，表示正在思考
+      setEyeDirection("down")
+    }, 500)
+
+    // 5秒后显示AI回复
+    setTimeout(() => {
+      setIsThinking(false)
+      
       const aiResponse = {
         id: messages.length + 2,
         content:
@@ -70,7 +81,7 @@ export default function OraclePage() {
       eyeTimerRef.current = setTimeout(() => {
         setEyeDirection("center")
       }, 2000)
-    }, 1500)
+    }, 5500)
   }
 
   // 清理定时器
@@ -114,6 +125,9 @@ export default function OraclePage() {
               {messages.map((message) => (
                 <ChatMessage key={message.id} {...message} />
               ))}
+              
+              {/* Oracle thinking animation */}
+              {isThinking && <OracleThinking />}
             </div>
 
             {/* Usage indicator */}

@@ -586,10 +586,6 @@
     bottom: calc(var(--spacing) * 0);
   }
 
-  .bottom-20 {
-    bottom: calc(var(--spacing) * 20);
-  }
-
   .-left-12 {
     left: calc(var(--spacing) * -12);
   }
@@ -802,10 +798,6 @@
 
   .mb-12 {
     margin-bottom: calc(var(--spacing) * 12);
-  }
-
-  .mb-24 {
-    margin-bottom: calc(var(--spacing) * 24);
   }
 
   .-ml-4 {
@@ -2435,10 +2427,6 @@
 
   .pb-20 {
     padding-bottom: calc(var(--spacing) * 20);
-  }
-
-  .pb-40 {
-    padding-bottom: calc(var(--spacing) * 40);
   }
 
   .pl-2 {
@@ -6053,6 +6041,18 @@
 
   .animate-marquee {
     animation: 4s ease-in-out 1s infinite marquee;
+  }
+
+  @keyframes thinking-dot {
+    0%, 20%, 100% {
+      opacity: .2;
+      transform: scale(.8);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
   }
 }
 
