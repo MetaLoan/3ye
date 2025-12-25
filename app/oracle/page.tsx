@@ -81,10 +81,11 @@ export default function OraclePage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-background pb-40">
-      <div className="p-6 pt-12 max-w-screen-sm mx-auto">
-        <div className="mb-12">
-          <div className="flex items-start gap-4 mb-8">
+    <main className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Fixed header */}
+      <div className="shrink-0 p-6 pt-12 bg-background">
+        <div className="max-w-screen-sm mx-auto">
+          <div className="flex items-start gap-4">
             {/* 交互式眼睛 */}
             <div className="shrink-0">
               <OracleInteractiveEye direction={eyeDirection} className="w-16 h-16" />
@@ -99,22 +100,32 @@ export default function OraclePage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Messages */}
-        <div className="space-y-6 mb-24">
-          {messages.map((message) => (
-            <ChatMessage key={message.id} {...message} />
-          ))}
-        </div>
+      {/* Scrollable messages area with gradient mask */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* 顶部渐变遮罩 - 30%区域从透明到不透明 */}
+        <div className="absolute top-0 left-0 right-0 h-[30%] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
+        
+        <div className="h-full overflow-y-auto px-6 pb-6">
+          <div className="max-w-screen-sm mx-auto">
+            {/* Messages */}
+            <div className="space-y-6 pt-8">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} {...message} />
+              ))}
+            </div>
 
-        {/* Usage indicator */}
-        <div className="text-center mb-8">
-          <p className="text-xs opacity-20">2 of 5 daily messages remaining</p>
+            {/* Usage indicator */}
+            <div className="text-center my-8">
+              <p className="text-xs opacity-20">2 of 5 daily messages remaining</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Fixed input area */}
-      <div className="fixed bottom-20 left-0 right-0 p-6 bg-background">
+      <div className="shrink-0 p-6 bg-background pb-20">
         <div className="max-w-screen-sm mx-auto flex gap-2">
           <input
             type="text"
