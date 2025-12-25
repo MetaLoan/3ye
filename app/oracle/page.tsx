@@ -127,10 +127,10 @@ export default function OraclePage() {
 
       {/* Scrollable messages area with gradient mask */}
       <div className="flex-1 relative overflow-hidden">
-        {/* 顶部渐变遮罩 - 30%区域从透明到不透明 */}
-        <div className="absolute top-0 left-0 right-0 h-[30%] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
+        {/* 顶部渐变遮罩 - 缩小到约10%区域 */}
+        <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background via-background/60 to-transparent pointer-events-none z-10" />
         
-        <div ref={scrollContainerRef} className="h-full overflow-y-auto px-6 pb-6">
+        <div ref={scrollContainerRef} className="h-full overflow-y-auto px-6 pb-6 hide-scrollbar">
           <div className="max-w-screen-sm mx-auto">
             {/* Messages */}
             <div className="space-y-6 pt-8">

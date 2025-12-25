@@ -348,4 +348,14 @@
       transform: scale(1.2);
     }
   }
+
+  /* 隐藏滚动条但保持滚动功能 */
+  .hide-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+  }
 }

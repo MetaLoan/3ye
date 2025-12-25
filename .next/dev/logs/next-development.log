@@ -321,3 +321,299 @@ It can also happen if the client has a browser extension installed which messes 
 [00:19:27.522] Server  LOG      ✓ Compiled in 39ms
 [00:19:41.645] Server  LOG      ✓ Compiled in 25ms
 [00:19:50.341] Server  LOG      ✓ Compiled in 24ms
+[00:20:40.922] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:20:41.058] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <SegmentViewNode type="page" pagePath="oracle/pag...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function OraclePage} serverProvidedParams={{...}}>
+        <OraclePage params={Promise} searchParams={Promise}>
+          <main className="h-screen b...">
+            <div className="shrink-0 p...">
+              <div className="max-w-scre...">
+                <div className="flex items...">
+                  <div className="shrink-0">
+                    <OracleInteractiveEye direction="center" className="w-16 h-16">
+                      <div className="flex items...">
+                        <svg width="100%" height="100%" viewBox="0 0 200 200">
+                          <defs>
+                          <path>
+                          <path>
+                          <path>
+                          <g clipPath="url(#inter...">
+                            <g style={{...}}>
+                              <circle>
+                              <circle>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2={78.99999999999999}
++                               y2={63.62693304105359}
+-                               y2="63.62693304105358"
+                                stroke="black"
+                                strokeWidth="0.3"
+                                opacity="0.2"
+                              >
+                              ...
+                              ...
+                          ...
+                  ...
+            ...
+              <ChatMessage id={1} content={"I sense ..."} isUser={false} contextHint="Context-aware" timestamp="Just now">
+                <div className="flex justi...">
+                  <div className="shrink-0">
+                    <OracleEyeIcon className="w-10 h-10">
+                      <div className="flex items...">
+                        <svg width="100%" height="100%" viewBox="0 0 200 200" className="p-2">
+                          <defs>
+                          <path>
+                          <path>
+                          <path>
+                          <g clipPath="url(#sharp...">
+                            <g>
+                              <circle>
+                              <circle>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2={78.99999999999999}
++                               y2={63.62693304105359}
+-                               y2="63.62693304105358"
+                                stroke="white"
+                                strokeWidth="0.3"
+                                opacity="0.2"
+                              >
+                              ...
+                              ...
+                          ...
+                  ...
+            ...
+    ...
+
+[00:20:41.058] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:20:41.058] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/oracle","route":"/oracle"}
+[00:20:41.058] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/oracle color: rgb(120, 120, 120) color: inherit {"dp":"/oracle","o":"http://localhost:3000/oracle","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1766664054140}
+[00:26:17.369] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:26:17.504] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <SegmentViewNode type="page" pagePath="oracle/pag...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function OraclePage} serverProvidedParams={{...}}>
+        <OraclePage params={Promise} searchParams={Promise}>
+          <main className="h-screen b...">
+            <div className="shrink-0 p...">
+              <div className="max-w-scre...">
+                <div className="flex items...">
+                  <div className="shrink-0">
+                    <OracleInteractiveEye direction="center" className="w-16 h-16">
+                      <div className="flex items...">
+                        <svg width="100%" height="100%" viewBox="0 0 200 200">
+                          <defs>
+                          <path>
+                          <path>
+                          <path>
+                          <g clipPath="url(#inter...">
+                            <g style={{...}}>
+                              <circle>
+                              <circle>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2={78.99999999999999}
++                               y2={63.62693304105359}
+-                               y2="63.62693304105358"
+                                stroke="black"
+                                strokeWidth="0.3"
+                                opacity="0.2"
+                              >
+                              ...
+                              ...
+                          ...
+                  ...
+            ...
+              <ChatMessage id={1} content={"I sense ..."} isUser={false} contextHint="Context-aware" timestamp="Just now">
+                <div className="flex justi...">
+                  <div className="shrink-0">
+                    <OracleEyeIcon className="w-10 h-10">
+                      <div className="flex items...">
+                        <svg width="100%" height="100%" viewBox="0 0 200 200" className="p-2">
+                          <defs>
+                          <path>
+                          <path>
+                          <path>
+                          <g clipPath="url(#sharp...">
+                            <g>
+                              <circle>
+                              <circle>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2={78.99999999999999}
++                               y2={63.62693304105359}
+-                               y2="63.62693304105358"
+                                stroke="white"
+                                strokeWidth="0.3"
+                                opacity="0.2"
+                              >
+                              ...
+                              ...
+                          ...
+                  ...
+            ...
+    ...
+
+[00:26:17.504] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:26:17.504] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/oracle","route":"/oracle"}
+[00:26:17.504] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/oracle color: rgb(120, 120, 120) color: inherit {"dp":"/oracle","o":"http://localhost:3000/oracle","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1766664390586}
+[00:27:18.118] Server  LOG      ✓ Compiled in 125ms
+[00:27:28.589] Server  LOG      ✓ Compiled in 113ms
