@@ -46,8 +46,8 @@ export default function OraclePage() {
     setMessages([...messages, newUserMessage])
     setInput("")
 
-    // 用户发送消息时，眼睛看向左下角
-    setEyeDirection("down-left")
+    // 用户发送消息时，眼睛看向右下角（用户消息在右边）
+    setEyeDirection("down-right")
     if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
     eyeTimerRef.current = setTimeout(() => {
       setEyeDirection("center")
@@ -64,8 +64,8 @@ export default function OraclePage() {
       }
       setMessages((prev) => [...prev, aiResponse])
 
-      // Oracle回复时，眼睛看向右下角
-      setEyeDirection("down-right")
+      // Oracle回复时，眼睛看向左下角（Oracle消息在左边）
+      setEyeDirection("down-left")
       if (eyeTimerRef.current) clearTimeout(eyeTimerRef.current)
       eyeTimerRef.current = setTimeout(() => {
         setEyeDirection("center")
