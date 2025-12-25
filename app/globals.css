@@ -180,6 +180,12 @@
 
 /* Holographic gradient utility class */
 @layer utilities {
+  /* 统一容器边框样式 - 无圆角，纯黑细边框 */
+  .box-frame {
+    @apply border-[1px] border-foreground bg-background overflow-hidden;
+    border-radius: 0;
+  }
+
   .holographic {
     background: linear-gradient(
       135deg,
