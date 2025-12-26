@@ -105,7 +105,7 @@ export function BottomNav() {
               )}
             >
               <div className={cn(isActive && "scale-110 transition-transform")}>{item.icon(isActive)}</div>
-              <span className="text-[10px] tracking-wider uppercase">{item.name}</span>
+              <span className="text-[10px] tracking-wider ">{item.name}</span>
             </Link>
           )
         })}

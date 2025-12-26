@@ -80,7 +80,7 @@ export function TarotCard({ onReveal }: TarotCardProps) {
             <div className="w-12 h-12 border hairline border-foreground rounded-full flex items-center justify-center">
               <div className="w-6 h-6 holographic rounded-full opacity-40 animate-pulse" />
             </div>
-            <div className="text-[10px] uppercase tracking-[0.2em] opacity-30">Tap to reveal</div>
+            <div className="text-[10px]  tracking-[0.2em] opacity-30">Tap to reveal</div>
           </div>
           {/* Decorative pattern for back */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none">
@@ -110,7 +110,7 @@ export function TarotCard({ onReveal }: TarotCardProps) {
             </div>
             
             <div className="flex-1 flex flex-col items-center justify-center space-y-2 p-4 text-center">
-              <InkRevealText text="The Star" className="text-sm tracking-widest uppercase font-bold" />
+              <InkRevealText text="The Star" className="text-sm tracking-widest  font-normal" />
               <div className="w-8 h-[0.5px] bg-foreground/30" />
               <InkRevealText text="Hope • Renewal • Purpose" className="text-[10px] opacity-40 leading-relaxed" />
             </div>

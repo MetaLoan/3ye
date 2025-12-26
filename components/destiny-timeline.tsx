@@ -129,10 +129,10 @@ export function DestinyTimeline({ selectedHour, onSelectHour }: DestinyTimelineP
           {/* Content Card */}
           <div className="max-w-md mx-auto p-4 box-frame">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground">
+              <span className="text-[8px]  tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground">
                 {selectedItem.type}
               </span>
-              <h3 className="text-sm font-bold tracking-tight text-foreground">
+              <h3 className="text-sm font-normal tracking-tight text-foreground">
                 <InkRevealText text={selectedItem.title} />
               </h3>
             </div>
@@ -191,7 +191,7 @@ export function DestinyTimeline({ selectedHour, onSelectHour }: DestinyTimelineP
 
                 {/* Time Label */}
                 <span className={`absolute top-6 text-[10px] font-mono whitespace-nowrap text-foreground ${
-                  isSelected ? 'font-medium' : isPast || isNext ? '' : 'opacity-30'
+                  isSelected ? 'font-normal' : isPast || isNext ? '' : 'opacity-30'
                 }`}>
                   {String(item.hour).padStart(2, '0')}:00
                 </span>

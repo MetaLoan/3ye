@@ -34,7 +34,7 @@ export function ChatMessage({ content, isUser, timestamp, contextHint }: ChatMes
         {/* Context hint for Oracle messages */}
         {!isUser && contextHint && (
           <div 
-            className="text-[10px] opacity-30 mb-2 tracking-wider uppercase transition-all duration-500 ml-1"
+            className="text-[10px] opacity-30 mb-2 tracking-wider  transition-all duration-500 ml-1"
             style={{
               opacity: isVisible ? 0.3 : 0,
               transform: isVisible ? "translateY(0)" : "translateY(8px)",

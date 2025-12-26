@@ -498,7 +498,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
               {/* 初始提示文字 - 使用 TextReveal 实现 fadeaway */}
               {hintMode !== "fadeaway" ? (
                 <span 
-                  className="text-[12px] tracking-widest text-foreground uppercase animate-pulse absolute left-0 right-0"
+                  className="text-[12px] tracking-widest text-foreground  animate-pulse absolute left-0 right-0"
                 >
                   Draw Card to Unlock Today's Destiny
                 </span>
@@ -507,7 +507,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                   <TextReveal
                     text="Draw Card to Unlock Today's Destiny"
                     mode="fadeaway"
-                    className="text-[12px] tracking-widest text-foreground uppercase"
+                    className="text-[12px] tracking-widest text-foreground "
                     delayPerChar={12}
                   />
                 </div>
@@ -530,7 +530,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                 <TextReveal
                   text={cardName}
                   mode={readingMode}
-                  className="text-[14px] font-bold tracking-wider text-foreground"
+                  className="text-[14px] font-normal tracking-wider text-foreground"
                   delayPerChar={readingMode === "fadeaway" ? 8 : 45}
                   startDelay={0}
                 />
@@ -756,7 +756,7 @@ export function DestinyChart({ mode, showChart = true, selectedHour, onSelectHou
                   >
                     {displayEnergy.toFixed(2)}
                   </span>
-                  <span className="text-xs text-foreground/60 uppercase tracking-wider">Energy Field</span>
+                  <span className="text-xs text-foreground/60  tracking-wider">Energy Field</span>
                 </div>
               </div>
               <p className="text-xs text-foreground/80 leading-relaxed">

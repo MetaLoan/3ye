@@ -103,7 +103,7 @@ export function StarfieldEffect({ className, speedMultiplier = 1, colorMode = "n
         const x = star.x * k + canvas!.width / 2
         const y = star.y * k + canvas!.height / 2
 
-        const size = (1 - star.z / canvas!.width) * 2
+        const size = Math.max(0, (1 - star.z / canvas!.width) * 2)
         const brightness = 1 - star.z / canvas!.width
 
         // fading 模式现在保持20%透明度，不再跳过绘制

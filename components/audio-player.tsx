@@ -107,7 +107,7 @@ export function AudioPlayer({
       <div className="flex items-center gap-3 p-4">
         {/* 标题 + 频率副标题 + 能量指示器 */}
         <div className="shrink-0 w-32 sm:w-40 overflow-hidden">
-          <div className="text-sm font-bold whitespace-nowrap overflow-hidden">
+          <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
             <span className="inline-block hover:animate-marquee">
               <InkRevealText text={title} />
             </span>

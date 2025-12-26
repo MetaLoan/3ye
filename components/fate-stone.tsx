@@ -259,7 +259,7 @@ export function FateStone() {
               </p>
             ) : !isHolding && (
               <>
-                <p className="text-xs opacity-40 tracking-widest uppercase">
+                <p className="text-xs opacity-40 tracking-widest ">
                   <InkRevealText text="Hold to seek guidance" />
                 </p>
                 <p className="text-xs opacity-20 mt-2">3 times remaining today</p>

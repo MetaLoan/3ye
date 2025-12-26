@@ -223,7 +223,7 @@ export function StarRadar() {
                   y={labelPos.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[9px] uppercase tracking-wider fill-current font-light"
+                  className="text-[9px]  tracking-wider fill-current font-light"
                 >
                   {d.name}
                 </text>
@@ -361,7 +361,7 @@ export function StarRadar() {
           </svg>
 
           {/* 专业版图例 */}
-          <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[8px] uppercase tracking-widest text-foreground font-mono">
+          <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[8px]  tracking-widest text-foreground font-mono">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-[1px] bg-[#96E6A1]" /> Trine
             </span>
@@ -383,13 +383,13 @@ export function StarRadar() {
       {/* Current alerts */}
       <div className="mt-8 space-y-4">
         <div className="flex items-center gap-4 text-xs group">
-          <span className="text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0">Alert</span>
+          <span className="text-[8px]  tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0">Alert</span>
           <span className="font-light leading-relaxed text-foreground">
             <InkRevealText text="Mercury retrograde affecting Intellect dimension until Feb 3" />
           </span>
         </div>
         <div className="flex items-center gap-4 text-xs group">
-          <span className="text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0">Peak</span>
+          <span className="text-[8px]  tracking-widest px-2 py-1 rounded-sm bg-foreground/5 text-foreground shrink-0">Peak</span>
           <span className="font-light leading-relaxed text-foreground">
             <InkRevealText text="Spirit energy at highest point this month - ideal for manifestation" />
           </span>
