@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { CalendarDays, Droplets, Infinity, Sparkles, User, UserRound, Camera, RefreshCw, CheckCircle2, Scan } from "lucide-react"
+import { CalendarDays, Droplets, Sparkles, User, UserRound, Camera, RefreshCw, CheckCircle2, Scan } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { BottomNav } from "@/components/bottom-nav"
 import { InkRevealText } from "@/components/ink-reveal-text"
+import { OracleInteractiveEye } from "@/components/oracle-interactive-eye"
 import { cn } from "@/lib/utils"
 
 // 自定义十二星座线性图标组件
@@ -192,7 +193,7 @@ const portalNodes: Record<PortalId, NodeConfig[]> = {
 const ringPositions = Array.from({ length: 5 }, (_, index) => {
   const angleDeg = -90 + index * (360 / 5)
   const angleRad = (angleDeg * Math.PI) / 180
-  const radius = 32
+  const radius = 32  // Portal slot positions around the ring
   const x = 50 + radius * Math.cos(angleRad)
   const y = 50 + radius * Math.sin(angleRad)
   return {
@@ -224,44 +225,496 @@ type PortalRingProps = {
   isResonating: boolean
 }
 
-function EyeScanner({ onCapture }: { onCapture: (code: string) => void }) {
-  const [stream, setStream] = useState<MediaStream | null>(null)
-  const [isScanning, setIsScanning] = useState(false)
+function EyeScanner({ onCapture }: { onCapture: (code: string, image: string) => void }) {
+  const [isStarted, setIsStarted] = useState(false)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const [loadingStatus, setLoadingStatus] = useState<string>("IDLE")
+  const [eyePositions, setEyePositions] = useState<{ left: { x: number, y: number }, right: { x: number, y: number } } | null>(null)
+  const [capturePhase, setCapturePhase] = useState<number>(-1) // -1=waiting, 0-4=ritual phrases, 5=captured
+  const capturePhaseRef = useRef<number>(-1)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [capturedEyePositions, setCapturedEyePositions] = useState<{ left: { x: number, y: number }, right: { x: number, y: number } } | null>(null)
+  const [soulCode, setSoulCode] = useState<string | null>(null)
+  
   const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const faceMeshRef = useRef<any>(null)
+  const requestRef = useRef<number | null>(null)
+  const isActiveRef = useRef(false)
+  const eyeDetectedRef = useRef(false)
+
+  // Mystical ritual phrases
+  const ritualPhrases = [
+    "Gazing through the portal of your soul...",
+    "Reading the ancient patterns within your iris...",
+    "Decoding the celestial imprint of your essence...",
+    "Channeling the ethereal frequencies of your being...",
+    "Capturing the infinite depth of your inner cosmos..."
+  ]
+
+  const waitingMessage = "Awaiting your gaze... Please let me see both eyes looking into the lens."
+
+  // MediaPipe landmark indices
+  const LEFT_IRIS_CENTER = 468
+  const RIGHT_IRIS_CENTER = 473
+
+  // Keep ref in sync with state for use in callbacks
+  useEffect(() => {
+    capturePhaseRef.current = capturePhase
+  }, [capturePhase])
+
+  // Phase progression effect - runs when phase changes and eyes are detected
+  useEffect(() => {
+    // Only progress if eyes are detected and we're in ritual phase (0-4)
+    if (!eyeDetectedRef.current || capturePhase < 0 || capturePhase >= ritualPhrases.length || capturedImage) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      // Double check eyes are still detected
+      if (eyeDetectedRef.current) {
+        const nextPhase = capturePhase + 1
+        if (nextPhase < ritualPhrases.length) {
+          setCapturePhase(nextPhase)
+        } else {
+          // All phrases done - perform capture
+          performCapture()
+        }
+      }
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [capturePhase, capturedImage])
+
+  // Wait for MediaPipe libs
+  const waitForLibs = async (maxRetries = 30): Promise<boolean> => {
+    for (let i = 0; i < maxRetries; i++) {
+      const fm = (window as any).FaceMesh
+      if (fm) return true
+      await new Promise(r => setTimeout(r, 300))
+      setLoadingStatus(`Initializing vision core (${i + 1}/${maxRetries})`)
+    }
+    return false
+  }
+
+  // Load MediaPipe scripts dynamically
+  const loadMediaPipeScript = () => {
+    return new Promise<void>((resolve, reject) => {
+      if ((window as any).FaceMesh) {
+        resolve()
+        return
+      }
+      
+      const cameraScript = document.createElement('script')
+      cameraScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js'
+      cameraScript.crossOrigin = 'anonymous'
+      document.head.appendChild(cameraScript)
+      
+      const drawingScript = document.createElement('script')
+      drawingScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js'
+      drawingScript.crossOrigin = 'anonymous'
+      document.head.appendChild(drawingScript)
+      
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js'
+      script.crossOrigin = 'anonymous'
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load MediaPipe'))
+      document.head.appendChild(script)
+    })
+  }
+
+  const performCapture = () => {
+    if (!videoRef.current) return
+    
+    const video = videoRef.current
+    const vw = video.videoWidth
+    const vh = video.videoHeight
+    
+    // Use eye positions if available, otherwise capture center area
+    let minX = 0, maxX = vw, minY = 0, maxY = vh
+    
+    if (eyePositions && eyePositions.left && eyePositions.right) {
+      // Eye positions are stored as percentages (0-100), convert to pixels
+      // Note: positions are already in video coordinate space (not mirrored)
+      const leftEyeX = (eyePositions.left.x / 100) * vw
+      const leftEyeY = (eyePositions.left.y / 100) * vh
+      const rightEyeX = (eyePositions.right.x / 100) * vw
+      const rightEyeY = (eyePositions.right.y / 100) * vh
+      
+      // Calculate bounding box around both eyes with padding
+      const paddingX = vw * 0.15  // 15% horizontal padding
+      const paddingY = vh * 0.08  // 8% vertical padding
+      
+      minX = Math.max(0, Math.min(leftEyeX, rightEyeX) - paddingX)
+      maxX = Math.min(vw, Math.max(leftEyeX, rightEyeX) + paddingX)
+      minY = Math.max(0, Math.min(leftEyeY, rightEyeY) - paddingY)
+      maxY = Math.min(vh, Math.max(leftEyeY, rightEyeY) + paddingY)
+    } else {
+      // Fallback: capture center portion of the video
+      const centerX = vw / 2
+      const centerY = vh / 2
+      const cropW = vw * 0.6
+      const cropH = vh * 0.3
+      minX = centerX - cropW / 2
+      maxX = centerX + cropW / 2
+      minY = centerY - cropH / 2
+      maxY = centerY + cropH / 2
+    }
+    
+    const cropWidth = Math.round(maxX - minX)
+    const cropHeight = Math.round(maxY - minY)
+    
+    // Create a temporary canvas to crop the eye area from the raw video (no overlay)
+    const tempCanvas = document.createElement('canvas')
+    tempCanvas.width = cropWidth
+    tempCanvas.height = cropHeight
+    const tempCtx = tempCanvas.getContext('2d')
+    
+    if (tempCtx) {
+      // Mirror the image horizontally (like the preview) and crop
+      tempCtx.translate(cropWidth, 0)
+      tempCtx.scale(-1, 1)
+      
+      // Draw only the eye region from the original video
+      tempCtx.drawImage(
+        video,
+        Math.round(minX), Math.round(minY), cropWidth, cropHeight,  // source crop
+        0, 0, cropWidth, cropHeight                                   // destination
+      )
+      
+      // Get the cropped eye image
+      const croppedImageData = tempCanvas.toDataURL('image/jpeg', 0.95)
+      setCapturedImage(croppedImageData)
+      
+      // Generate soul code from image hash
+      const hash = croppedImageData.length.toString(16).toUpperCase().slice(-8)
+      const code = `SOUL-${hash}-${Date.now().toString(36).toUpperCase().slice(-4)}`
+      setSoulCode(code)
+      
+      // Directly save and close - no intermediate "Saving..." screen
+      onCapture(code, croppedImageData)
+      stopCamera()
+    }
+  }
 
   const startCamera = async () => {
+    setIsStarted(true)
+    setLoadingStatus("Loading vision components...")
+    
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } } 
-      })
-      setStream(s)
-      if (videoRef.current) {
-        videoRef.current.srcObject = s
+      await loadMediaPipeScript()
+      
+      const libsReady = await waitForLibs()
+      if (!libsReady) {
+        throw new Error("MEDIAPIPE_LIBS_NOT_FOUND")
       }
+
+      setLoadingStatus("Connecting to camera...")
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false
+      })
+      streamRef.current = stream
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+      }
+      
       setHasPermission(true)
+      
+      setLoadingStatus("Initializing neural network...")
+      const FaceMesh = (window as any).FaceMesh
+      const faceMesh = new FaceMesh({
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      })
+      
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      })
+      
+      faceMesh.onResults((results: any) => {
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+          const landmarks = results.multiFaceLandmarks[0]
+          const leftEye = landmarks[LEFT_IRIS_CENTER]
+          const rightEye = landmarks[RIGHT_IRIS_CENTER]
+          
+          if (leftEye && rightEye) {
+            const newPositions = {
+              left: { x: leftEye.x * 100, y: leftEye.y * 100 },
+              right: { x: rightEye.x * 100, y: rightEye.y * 100 }
+            }
+            setEyePositions(newPositions)
+            
+            // Start ritual if not already started and not captured
+            if (!eyeDetectedRef.current && capturePhase < 0 && !capturedImage) {
+              eyeDetectedRef.current = true
+              setCapturePhase(0) // Start ritual
+            } else {
+              eyeDetectedRef.current = true
+            }
+          } else {
+            handleEyesLost()
+          }
+        } else {
+          handleEyesLost()
+        }
+        
+        renderFrame(results)
+        
+        if (loadingStatus !== "READY") {
+          setLoadingStatus("READY")
+        }
+      })
+      
+      faceMeshRef.current = faceMesh
+      isActiveRef.current = true
+      
+      const processFrame = async () => {
+        if (!isActiveRef.current || !videoRef.current || videoRef.current.paused) {
+          requestRef.current = requestAnimationFrame(processFrame)
+          return
+        }
+        
+        try {
+          await faceMeshRef.current.send({ image: videoRef.current })
+        } catch (e) {
+          console.error("Frame processing error:", e)
+        }
+        
+        requestRef.current = requestAnimationFrame(processFrame)
+      }
+      
+      requestRef.current = requestAnimationFrame(processFrame)
+      
     } catch (err) {
-      console.error("Camera access denied:", err)
+      console.error("Camera/MediaPipe initialization failed:", err)
       setHasPermission(false)
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        alert("Camera permission denied. Please enable it in your browser settings and refresh.")
+      }
     }
+  }
+
+  const handleEyesLost = () => {
+    setEyePositions(null)
+    eyeDetectedRef.current = false
+    // Reset ritual if in progress
+    if (capturePhase >= 0 && capturePhase < ritualPhrases.length) {
+      setCapturePhase(-1)
+    }
+  }
+  
+  const renderFrame = (results: any) => {
+    if (!canvasRef.current || !videoRef.current) return
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return
+    
+    const cw = canvasRef.current.width
+    const ch = canvasRef.current.height
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, cw, ch)
+    
+    // Layer 1: Draw blurred and darkened background
+    ctx.save()
+    ctx.filter = 'blur(15px) brightness(0.3)'
+    ctx.scale(-1, 1)
+    ctx.drawImage(videoRef.current, -cw, 0, cw, ch)
+    ctx.restore()
+    
+    // Layer 2: Draw clear image only in eye areas (if detected)
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+      const landmarks = results.multiFaceLandmarks[0]
+      const leftEye = landmarks[LEFT_IRIS_CENTER]
+      const rightEye = landmarks[RIGHT_IRIS_CENTER]
+      
+      if (leftEye && rightEye) {
+        ctx.save()
+        
+        // Create clipping path for both eyes
+        ctx.beginPath()
+        
+        // Left eye ellipse (mirror X coordinate)
+        const leftX = cw - (leftEye.x * cw)
+        const leftY = leftEye.y * ch
+        ctx.ellipse(leftX, leftY, 50, 35, 0, 0, Math.PI * 2)
+        
+        // Right eye ellipse (mirror X coordinate)
+        const rightX = cw - (rightEye.x * cw)
+        const rightY = rightEye.y * ch
+        ctx.ellipse(rightX, rightY, 50, 35, 0, 0, Math.PI * 2)
+        
+        ctx.clip()
+        
+        // Draw clear video in clipped area
+        ctx.filter = 'none'
+        ctx.scale(-1, 1)
+        ctx.drawImage(videoRef.current, -cw, 0, cw, ch)
+        
+        ctx.restore()
+        
+        // Draw eye progress ring effects on top
+        const currentPhase = capturePhaseRef.current
+        const progress = currentPhase >= 0 ? (currentPhase + 1) / ritualPhrases.length : 0
+        drawEyeProgressRing(ctx, leftEye, cw, ch, progress)
+        drawEyeProgressRing(ctx, rightEye, cw, ch, progress)
+      }
+    }
+  }
+  
+  const drawEyeProgressRing = (ctx: CanvasRenderingContext2D, eyeCenter: any, cw: number, ch: number, progress: number) => {
+    if (!eyeCenter) return
+    
+    const x = cw - (eyeCenter.x * cw)
+    const y = eyeCenter.y * ch
+    const r = 17  // Reduced to 1/3 of original (50 -> 17)
+    const lineWidth = 3  // Reduced proportionally
+    const time = Date.now()
+    const segments = 5 // 5 segments for 5 ritual phrases
+    const gapAngle = 0.08 // Gap between segments in radians
+    const segmentAngle = (Math.PI * 2 - gapAngle * segments) / segments
+    const startOffset = -Math.PI / 2 // Start from top
+    
+    ctx.save()
+    
+    // Draw each segment
+    for (let i = 0; i < segments; i++) {
+      const segmentStart = startOffset + i * (segmentAngle + gapAngle)
+      const segmentEnd = segmentStart + segmentAngle
+      const isLit = (i + 1) / segments <= progress
+      const isCurrentSegment = i === Math.floor(progress * segments) && progress < 1
+      
+      ctx.beginPath()
+      ctx.arc(x, y, r, segmentStart, segmentEnd)
+      ctx.lineCap = 'round'
+      ctx.lineWidth = lineWidth
+      
+      if (isLit) {
+        // Lit segment - bright neon gradient
+        const gradient = ctx.createLinearGradient(
+          x + Math.cos(segmentStart) * r,
+          y + Math.sin(segmentStart) * r,
+          x + Math.cos(segmentEnd) * r,
+          y + Math.sin(segmentEnd) * r
+        )
+        gradient.addColorStop(0, '#00ff88')
+        gradient.addColorStop(1, '#00ffff')
+        
+        ctx.strokeStyle = gradient
+        ctx.shadowBlur = 10
+        ctx.shadowColor = '#00ffff'
+        ctx.stroke()
+        
+        // Extra glow pass
+        ctx.shadowBlur = 40
+        ctx.shadowColor = '#00ff88'
+        ctx.globalAlpha = 0.4
+        ctx.stroke()
+        ctx.globalAlpha = 1
+      } else if (isCurrentSegment) {
+        // Currently filling segment - animated partial fill
+        const segmentProgress = (progress * segments) % 1
+        const partialEnd = segmentStart + segmentAngle * segmentProgress
+        
+        // Draw unfilled background first
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.15)'
+        ctx.shadowBlur = 0
+        ctx.stroke()
+        
+        // Draw partial fill
+        ctx.beginPath()
+        ctx.arc(x, y, r, segmentStart, partialEnd)
+        ctx.strokeStyle = '#00ffff'
+        ctx.shadowBlur = 8
+        ctx.shadowColor = '#00ffff'
+        ctx.stroke()
+      } else {
+        // Unlit segment - dim
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.15)'
+        ctx.shadowBlur = 0
+        ctx.stroke()
+      }
+      
+      ctx.shadowBlur = 0
+    }
+    
+    // Outer decorative ring
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.25)'
+    ctx.lineWidth = 1
+    ctx.shadowBlur = 8
+    ctx.shadowColor = '#00ffff'
+    ctx.beginPath()
+    ctx.arc(x, y, r + 5, 0, Math.PI * 2)
+    ctx.stroke()
+    
+    // Inner ring
+    ctx.beginPath()
+    ctx.arc(x, y, r - 5, 0, Math.PI * 2)
+    ctx.stroke()
+    
+    // Rotating scanner effect
+    ctx.shadowBlur = 15
+    ctx.shadowColor = '#00ffff'
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)'
+    ctx.lineWidth = 2
+    const scanAngle = (time / 600) % (Math.PI * 2)
+    ctx.beginPath()
+    ctx.moveTo(x + Math.cos(scanAngle) * (r - 20), y + Math.sin(scanAngle) * (r - 20))
+    ctx.lineTo(x + Math.cos(scanAngle) * (r + 20), y + Math.sin(scanAngle) * (r + 20))
+    ctx.stroke()
+    
+    // Center pulsing core
+    const pulseScale = 1 + Math.sin(time / 250) * 0.4
+    ctx.shadowBlur = 12
+    ctx.shadowColor = progress >= 1 ? '#00ff88' : '#00ffff'
+    ctx.fillStyle = progress >= 1 ? '#00ff88' : '#00ffff'
+    ctx.beginPath()
+    ctx.arc(x, y, 2 * pulseScale, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Progress text
+    ctx.shadowBlur = 15
+    ctx.font = 'bold 12px monospace'
+    ctx.textAlign = 'center'
+    if (progress < 1) {
+      ctx.fillStyle = '#00ffff'
+      ctx.shadowColor = '#00ffff'
+      ctx.fillText(`${Math.round(progress * 100)}%`, x, y + r + 30)
+    } else {
+      ctx.fillStyle = '#00ff88'
+      ctx.shadowColor = '#00ff88'
+      ctx.fillText('CAPTURED', x, y + r + 30)
+    }
+    
+    ctx.restore()
   }
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-      setStream(null)
+    isActiveRef.current = false
+    if (requestRef.current) cancelAnimationFrame(requestRef.current)
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
     }
-  }
-
-  const handleScan = () => {
-    setIsScanning(true)
-    // 模拟扫描过程
-    setTimeout(() => {
-      const soulCode = `EYE-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
-      onCapture(soulCode)
-      setIsScanning(false)
-      stopCamera()
-    }, 2500)
+    if (faceMeshRef.current) {
+      try { faceMeshRef.current.close() } catch(e) {}
+      faceMeshRef.current = null
+    }
+    setIsStarted(false)
+    setEyePositions(null)
+    setLoadingStatus("IDLE")
+    setCapturePhase(-1)
+    setCapturedImage(null)
+    setCapturedEyePositions(null)
+    setSoulCode(null)
+    eyeDetectedRef.current = false
   }
 
   useEffect(() => {
@@ -272,10 +725,10 @@ function EyeScanner({ onCapture }: { onCapture: (code: string) => void }) {
     return (
       <div className="flex flex-col items-center justify-center p-8 border hairline border-foreground/20 bg-foreground/5 text-center">
         <Camera className="w-8 h-8 mb-3 opacity-20" />
-        <p className="text-xs text-foreground font-normal">Camera access is required to capture eye imprint</p>
+        <p className="text-xs text-foreground font-normal">Camera access is required to capture your soul imprint</p>
         <button 
           onClick={startCamera}
-          className="mt-4 px-4 py-2 text-[10px]  tracking-widest border hairline border-foreground hover:bg-foreground hover:text-background transition-colors"
+          className="mt-4 px-4 py-2 text-[10px] tracking-widest border hairline border-foreground hover:bg-foreground hover:text-background transition-colors"
         >
           Enable Camera
         </button>
@@ -283,7 +736,7 @@ function EyeScanner({ onCapture }: { onCapture: (code: string) => void }) {
     )
   }
 
-  if (!stream) {
+  if (!isStarted) {
     return (
       <button 
         onClick={startCamera}
@@ -293,8 +746,95 @@ function EyeScanner({ onCapture }: { onCapture: (code: string) => void }) {
           <Scan className="w-10 h-10 opacity-20 group-hover:opacity-40 transition-opacity" />
           <div className="absolute inset-0 border border-foreground/20 scale-150 rounded-full animate-pulse" />
         </div>
-        <span className="text-[10px]  tracking-[0.2em] text-foreground font-normal">Initiate Eye Resonance</span>
+        <span className="text-[10px] tracking-[0.2em] text-foreground font-normal">Initiate Soul Resonance</span>
       </button>
+    )
+  }
+
+  const isReady = loadingStatus === "READY"
+
+  // Show captured image briefly before auto-confirm
+  if (capturedImage && capturePhase === 5) {
+    // Calculate eye positions for display (mirror X because canvas was mirrored)
+    const leftEyeX = capturedEyePositions ? (100 - capturedEyePositions.left.x) : 35
+    const leftEyeY = capturedEyePositions ? capturedEyePositions.left.y : 45
+    const rightEyeX = capturedEyePositions ? (100 - capturedEyePositions.right.x) : 65
+    const rightEyeY = capturedEyePositions ? capturedEyePositions.right.y : 45
+    
+    return (
+      <div className="relative aspect-square overflow-hidden border hairline border-foreground bg-black">
+        {/* SVG definitions for masks */}
+        <svg width="0" height="0" className="absolute">
+          <defs>
+            <clipPath id="eyesClipPath" clipPathUnits="objectBoundingBox">
+              <ellipse cx={leftEyeX / 100} cy={leftEyeY / 100} rx="0.12" ry="0.08" />
+              <ellipse cx={rightEyeX / 100} cy={rightEyeY / 100} rx="0.12" ry="0.08" />
+            </clipPath>
+          </defs>
+        </svg>
+        
+        {/* Layer 1: Blurred and darkened full image */}
+        <img 
+          src={capturedImage} 
+          alt="Background" 
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            filter: 'blur(20px) brightness(0.25)',
+            transform: 'scale(1.1)'
+          }}
+        />
+        
+        {/* Layer 2: Clear image clipped to eye areas only */}
+        <img 
+          src={capturedImage} 
+          alt="Eyes revealed" 
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            clipPath: 'url(#eyesClipPath)'
+          }}
+        />
+        
+        {/* Glow rings around eyes */}
+        <div 
+          className="absolute border border-[#00ffff]/50 rounded-[50%]"
+          style={{
+            left: `${leftEyeX}%`,
+            top: `${leftEyeY}%`,
+            width: '24%',
+            height: '16%',
+            transform: 'translate(-50%, -50%)',
+            boxShadow: '0 0 40px 10px rgba(0,255,255,0.2), inset 0 0 30px rgba(0,255,255,0.1)'
+          }}
+        />
+        <div 
+          className="absolute border border-[#00ffff]/50 rounded-[50%]"
+          style={{
+            left: `${rightEyeX}%`,
+            top: `${rightEyeY}%`,
+            width: '24%',
+            height: '16%',
+            transform: 'translate(-50%, -50%)',
+            boxShadow: '0 0 40px 10px rgba(0,255,255,0.2), inset 0 0 30px rgba(0,255,255,0.1)'
+          }}
+        />
+        
+        {/* Vignette overlay */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)'
+          }}
+        />
+        
+        {/* Success message - no buttons, auto-confirms */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <div className="text-center px-6 animate-pulse">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#00ffff]/80 mb-2">Soul Imprint Captured</p>
+            <p className="text-[#00ffff] font-mono text-sm tracking-wider mb-4">{soulCode}</p>
+            <p className="text-[10px] text-white/40">Saving...</p>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -302,46 +842,83 @@ function EyeScanner({ onCapture }: { onCapture: (code: string) => void }) {
     <div className="relative aspect-square overflow-hidden border hairline border-foreground bg-black">
       <video 
         ref={videoRef} 
-        autoPlay 
+        className="hidden"
         playsInline 
-        className="w-full h-full object-cover grayscale opacity-80"
+        muted
+        autoPlay
+      />
+      <canvas 
+        ref={canvasRef} 
+        width={480} 
+        height={480} 
+        className="w-full h-full object-cover"
       />
       
-      {/* 扫描 UI 叠加层 */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* 中心圆圈 */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-48 h-48 border hairline border-foreground/40 rounded-full" />
-          <div className="absolute w-56 h-56 border border-dashed border-foreground/20 rounded-full animate-[spinSlow_20s_linear_infinite]" />
-        </div>
-        
-        {/* 扫描线 */}
-        {isScanning && (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="w-full h-1 bg-foreground/30 blur-sm animate-[scanLine_2.5s_ease-in-out_infinite]" />
+      {/* Loading state */}
+      {!isReady && (
+        <div className="absolute inset-0 bg-black flex flex-col items-center justify-center gap-4 z-20">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 border-2 border-foreground/10 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
           </div>
-        )}
-      </div>
+          <p className="text-foreground/60 font-mono text-[10px] tracking-widest animate-pulse">{loadingStatus}</p>
+        </div>
+      )}
+      
+      {/* Ritual text overlay */}
+      {isReady && (
+        <div className="absolute inset-0 pointer-events-none flex flex-col">
+          {/* Status indicator */}
+          <div className="absolute top-4 left-4 flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${eyePositions ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></span>
+            <span className="text-[9px] text-white/60 font-mono uppercase tracking-widest">
+              {eyePositions ? 'IRIS_LOCKED' : 'SEARCHING'}
+            </span>
+          </div>
+          
+          {/* Ritual phrase or waiting message */}
+          <div className="flex-1 flex items-end justify-center pb-16 px-6">
+            <div className="text-center max-w-xs">
+              {eyePositions && capturePhase >= 0 && capturePhase < ritualPhrases.length ? (
+                <p 
+                  key={capturePhase}
+                  className="text-white/90 text-sm font-light italic leading-relaxed animate-fade-in"
+                >
+                  {ritualPhrases[capturePhase]}
+                </p>
+              ) : !eyePositions ? (
+                <p className="text-white/60 text-xs font-light leading-relaxed">
+                  {waitingMessage}
+                </p>
+              ) : null}
+              
+              {/* Progress indicator */}
+              {eyePositions && capturePhase >= 0 && capturePhase < ritualPhrases.length && (
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {ritualPhrases.map((_, idx) => (
+                    <div 
+                      key={idx}
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full transition-all duration-500",
+                        idx <= capturePhase ? "bg-white" : "bg-white/20"
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-      <div className="absolute inset-x-0 bottom-6 flex justify-center px-6">
-        <button
-          onClick={handleScan}
-          disabled={isScanning}
-          className={cn(
-            "px-6 py-2.5 bg-background text-foreground border hairline border-foreground text-[10px]  tracking-[0.2em] transition-all",
-            isScanning ? "opacity-50 cursor-not-allowed" : "hover:bg-foreground hover:text-background"
-          )}
+      {isReady && (
+        <button 
+          onClick={stopCamera}
+          className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur rounded-full hover:bg-background transition-colors"
         >
-          {isScanning ? "Resonating..." : "Capture Imprint"}
+          <RefreshCw className="w-4 h-4" />
         </button>
-      </div>
-
-      <button 
-        onClick={stopCamera}
-        className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur rounded-full hover:bg-background transition-colors"
-      >
-        <RefreshCw className="w-4 h-4" />
-      </button>
+      )}
     </div>
   )
 }
@@ -420,7 +997,7 @@ function OrbitalNode({
       >
         <div
           className={cn(
-            "flex items-center justify-center w-[72px] h-[72px] rounded-full border border-foreground bg-background shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-colors",
+            "flex items-center justify-center w-[72px] h-[72px] rounded-full border border-foreground bg-background shadow-[0_0_5px_rgba(0,0,0,0.06)] transition-colors",
             filled ? "bg-foreground text-background" : "hover:bg-foreground hover:text-background",
           )}
         >
@@ -437,7 +1014,7 @@ function OrbitalNode({
           {filled ? (
             <div className="w-2.5 h-2.5 bg-foreground rounded-full animate-in fade-in zoom-in duration-500" />
           ) : (
-            <div className="w-2.5 h-2.5 bg-background border border-foreground/20 rounded-full animate-in fade-in zoom-in duration-500" />
+            <div className="w-2.5 h-2.5 bg-background border border-foreground rounded-full animate-in fade-in zoom-in duration-500" />
           )}
         </div>
       )}
@@ -474,34 +1051,43 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
         }}
         className="relative flex items-center justify-center focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-foreground/60"
       >
+        {/* 谐振时的随机彩虹渐变外发光 - 移到法阵盘外部底部 */}
+        {isResonating && (
+          <div 
+            className={cn(
+              "absolute rounded-full z-[-1]",
+              collapsed ? "-inset-1" : "-inset-2"
+            )}
+            style={{
+              background: 'conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0000)',
+              animation: `
+                spinSlow ${id === 'subjectA' ? '1.5s' : '2.1s'} linear infinite ${id === 'subjectA' ? '' : 'reverse'},
+                glowSync 6s ease-in-out forwards
+              `,
+              transform: `rotate(${id === 'subjectA' ? '45deg' : '210deg'})`
+            }}
+          />
+        )}
+
         <div
           className={cn(
-            "relative rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer bg-background/70 border border-foreground/15 backdrop-blur",
-            collapsed ? "opacity-70 scale-95 w-[100px] h-[100px] md:w-[120px] md:h-[120px]" : "opacity-100 scale-100 w-[320px] h-[320px] md:w-[380px] md:h-[380px]",
-            "shadow-[0_20px_80px_rgba(0,0,0,0.12)]",
+            "relative rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer bg-white border border-foreground",
+            collapsed ? "opacity-100 scale-95 w-[100px] h-[100px] md:w-[120px] md:h-[120px]" : "opacity-100 scale-100 w-[320px] h-[320px] md:w-[380px] md:h-[380px]",
+            "shadow-[0_0_5px_rgba(0,0,0,0.12)]",
             collapsed ? "animate-[spinSlow_18s_linear_infinite]" : "",
           )}
         >
-          {/* 谐振时的随机彩虹渐变外发光 */}
-          {isResonating && (
-            <div 
-              className="absolute -inset-12 rounded-full blur-3xl opacity-80 z-[-1]"
-              style={{
-                background: 'conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0000)',
-                animation: `spinSlow ${id === 'subjectA' ? '1.5s' : '2.1s'} linear infinite ${id === 'subjectA' ? '' : 'reverse'}`,
-                transform: `rotate(${id === 'subjectA' ? '45deg' : '210deg'})`
-              }}
-            />
-          )}
-          <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/25">
+          <svg viewBox="0 0 100 100" className={cn("absolute inset-0 transition-colors duration-700", collapsed ? "text-foreground" : "text-foreground/30")}>
             <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth={0.5} strokeDasharray="2 4" />
             <polygon
               points={starPoints}
               fill="none"
               stroke="currentColor"
-              strokeWidth={0.3}
+              strokeWidth={collapsed ? 0.5 : 0.3}
+              strokeDasharray={collapsed ? "none" : "1 2"}
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="transition-all duration-700"
             />
           </svg>
 
@@ -517,8 +1103,6 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
               onSelect={(field) => onSelectField(id, field)}
             />
           ))}
-
-          <div className="absolute inset-0 rounded-full bg-foreground/5 blur-3xl opacity-40 pointer-events-none" />
         </div>
       </div>
     </div>
@@ -526,7 +1110,7 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
 }
 
 export default function ConnectPage() {
-  const [activePortal, setActivePortal] = useState<PortalId | "none">("subjectA")
+  const [activePortal, setActivePortal] = useState<PortalId | "none">("none")
   const [isResonating, setIsResonating] = useState(false)
   const [portalValues, setPortalValues] = useState<Record<PortalId, Record<FieldKey, string>>>({
     subjectA: { ...emptyFields },
@@ -535,6 +1119,7 @@ export default function ConnectPage() {
   const [editing, setEditing] = useState<{ portal: PortalId; field: FieldKey } | null>(null)
   const [draftValue, setDraftValue] = useState("")
   const [draftTimeValue, setDraftTimeValue] = useState("")
+  const [capturedSoulImage, setCapturedSoulImage] = useState<string | null>(null)
 
   useEffect(() => {
     if (editing) {
@@ -593,7 +1178,7 @@ export default function ConnectPage() {
 
   return (
     <main 
-      className="relative h-screen bg-background text-foreground overflow-hidden"
+      className="relative min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden"
       onClick={() => {
         if (!isResonating && !editing) {
           setActivePortal("none")
@@ -601,8 +1186,9 @@ export default function ConnectPage() {
       }}
     >
       <div className={cn(
-        "relative z-50 px-6 pt-12 max-w-screen-lg mx-auto transition-all duration-700",
-        isResonating ? "opacity-0 invisible" : "opacity-100 visible"
+        "relative px-6 pt-12 pb-4 max-w-screen-lg mx-auto shrink-0 w-full",
+        isResonating ? "opacity-0 invisible transition-all duration-700" : "opacity-100 visible transition-opacity duration-700",
+        editing ? "z-20" : "z-50"
       )}>
         <div className="mb-0">
           <h1 className="text-4xl font-light mb-2">
@@ -614,28 +1200,41 @@ export default function ConnectPage() {
         </div>
       </div>
 
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+      <div className="flex-1 relative flex items-center justify-center pointer-events-none z-20 w-full py-20">
+        {/* 用于视觉居中的参考占位符，高度与顶部标题区域一致，以抵消其对中心点的影响 */}
+        <div className="absolute top-0 h-[116px] w-full pointer-events-none" />
+        
         <section 
           className={cn(
-            "pointer-events-auto relative flex flex-col items-center transition-all duration-[2000ms] ease-in-out",
-            isResonating ? "" : "gap-10"
+            "pointer-events-auto relative flex flex-col items-center",
+            isResonating ? "" : "gap-10 transition-all duration-[2000ms] ease-in-out"
           )}
           style={{
-            gap: isResonating ? "-20px" : "40px",
-            animation: isResonating ? "sectionOrbit 6s ease-in-out forwards" : ""
+            marginTop: activePortal === "none" || activePortal === "resonance" ? "-116px" : "0px",
+            gap: isResonating ? "0px" : undefined
           }}
         >
-          <PortalRing
-            id="subjectA"
-            label="Subject A"
-            codename="North Node"
-            activePortal={activePortal as any}
-            onActivate={setActivePortal}
-            values={portalValues.subjectA}
-            onSelectField={handleSelectField}
-            isResonating={isResonating}
-          />
+          {/* 上方法阵 - 单独旋转 */}
+          <div 
+            className="relative"
+            style={{
+              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "",
+              transformOrigin: "center calc(100% + 40px)"
+            }}
+          >
+            <PortalRing
+              id="subjectA"
+              label="Subject A"
+              codename="North Node"
+              activePortal={activePortal as any}
+              onActivate={setActivePortal}
+              values={portalValues.subjectA}
+              onSelectField={handleSelectField}
+              isResonating={isResonating}
+            />
+          </div>
 
+          {/* 中心区域 - 不旋转 */}
           <div className="relative flex items-center justify-center w-full py-1">
             <div className={cn(
               "absolute w-[200vw] h-px bg-gradient-to-r from-transparent via-foreground/40 to-transparent transition-opacity duration-500",
@@ -649,31 +1248,58 @@ export default function ConnectPage() {
               }}
               className={cn(
                 "relative flex items-center justify-center w-16 h-16 rounded-full border border-foreground bg-background transition-all duration-[2000ms] ease-in-out",
-                isResonating ? "shadow-[0_0_60px_rgba(0,0,0,0.3)]" : "hover:scale-105"
+                isResonating ? "shadow-[0_0_5px_rgba(0,0,0,0.1)]" : "hover:scale-105"
               )}
-              style={{
-                animation: isResonating ? "resonanceCycle 6s ease-in-out forwards" : ""
-              }}
             >
-              <div className="absolute inset-0 rounded-full border border-foreground/20 animate-[pulseHalo_3s_ease-in-out_infinite]" />
-              <div className="absolute inset-2 rounded-full border border-foreground/15 animate-[spinSlow_12s_linear_infinite]" />
-              <Infinity className="h-6 w-6" />
+              {/* 内环 - 黑色背景 */}
+              <div className="absolute inset-[6px] rounded-full bg-foreground flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 rounded-full border border-white/10 animate-[pulseHalo_3s_ease-in-out_infinite]" />
+                <div className="absolute inset-1 rounded-full border border-white/5 animate-[spinSlow_12s_linear_infinite]" />
+                
+                {/* 动态眼睛 - 在黑色内环显示为白色 */}
+                <OracleInteractiveEye 
+                  direction={
+                    activePortal === "subjectA" ? "up" : 
+                    activePortal === "subjectB" ? "down" : 
+                    "center"
+                  } 
+                  className="w-9 h-9" 
+                  inverted={true}
+                />
+              </div>
             </button>
           </div>
 
-          <PortalRing
-            id="subjectB"
-            label="Subject B"
-            codename="South Node"
-            invert
-            activePortal={activePortal as any}
-            onActivate={setActivePortal}
-            values={portalValues.subjectB}
-            onSelectField={handleSelectField}
-            isResonating={isResonating}
-          />
+          {/* 下方法阵 - 单独旋转 */}
+          <div 
+            className="relative"
+            style={{
+              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "",
+              transformOrigin: "center calc(0% - 40px)"
+            }}
+          >
+            <PortalRing
+              id="subjectB"
+              label="Subject B"
+              codename="South Node"
+              invert
+              activePortal={activePortal as any}
+              onActivate={setActivePortal}
+              values={portalValues.subjectB}
+              onSelectField={handleSelectField}
+              isResonating={isResonating}
+            />
+          </div>
         </section>
       </div>
+
+      {/* Backdrop blur overlay when editing - covers everything except bottom nav */}
+      {editing && (
+        <div 
+          className="fixed inset-x-0 top-0 bottom-20 z-30 backdrop-blur-md bg-background/50"
+          onClick={() => setEditing(null)}
+        />
+      )}
 
       {editing ? (
         <div 
@@ -705,7 +1331,7 @@ export default function ConnectPage() {
                 value={draftValue}
                 onChange={(event) => setDraftValue(event.target.value)}
                 placeholder={fieldMeta[editing.field].placeholder}
-                className="w-full border hairline border-foreground px-4 py-3 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-foreground"
+                className="w-full border hairline border-foreground px-4 py-3 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-foreground placeholder:font-light placeholder:text-foreground/40"
               />
             )}
 
@@ -757,29 +1383,59 @@ export default function ConnectPage() {
             {fieldMeta[editing.field].type === "eye" && (
               <div className="flex flex-col gap-4">
                 {draftValue ? (
-                  <div className="flex items-center justify-between p-4 border hairline border-foreground bg-foreground/[0.02]">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-foreground" />
-                      <span className="text-sm font-mono tracking-wider text-foreground"> {draftValue}</span>
-                    </div>
-                    <button 
-                      onClick={() => setDraftValue("")}
-                      className="text-[10px]  tracking-widest text-foreground hover:opacity-70 transition-opacity"
-                    >
-                      Rescan
-                    </button>
+                  <div className="flex flex-col">
+                    {/* Captured eye image */}
+                    {capturedSoulImage && (
+                      <>
+                        {/* Eye display area - cropped eye close-up */}
+                        <div className="relative overflow-hidden border hairline border-foreground">
+                          <img 
+                            src={capturedSoulImage} 
+                            alt="Eye capture" 
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
+                        {/* Soul code centered below image */}
+                        <div className="flex items-center justify-center gap-2 py-4">
+                          <CheckCircle2 className="w-4 h-4 text-foreground" />
+                          <span className="text-sm font-mono tracking-wider text-foreground">{draftValue}</span>
+                        </div>
+                      </>
+                    )}
+                    {!capturedSoulImage && (
+                      <div className="flex items-center justify-center gap-2 py-4">
+                        <CheckCircle2 className="w-5 h-5 text-foreground" />
+                        <span className="text-sm font-mono tracking-wider text-foreground">{draftValue}</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <EyeScanner onCapture={(code) => setDraftValue(code)} />
+                  <EyeScanner onCapture={(code, image) => {
+                    setDraftValue(code)
+                    setCapturedSoulImage(image)
+                  }} />
                 )}
-                <p className="text-[10px] text-center text-foreground font-normal tracking-[0.1em]">
-                  Align your eye within the resonance circle
-                </p>
               </div>
             )}
 
             {fieldMeta[editing.field].type !== "select" && (
-              <div className="flex justify-end gap-2 mt-4">
+              <div className="flex justify-between items-center mt-4">
+                {/* Rescan button on the left - only show for eye type when captured */}
+                {fieldMeta[editing.field].type === "eye" && draftValue ? (
+                  <button 
+                    onClick={() => {
+                      setDraftValue("")
+                      setCapturedSoulImage(null)
+                    }}
+                    className="text-[10px] tracking-widest text-foreground/60 hover:text-foreground transition-colors"
+                  >
+                    Rescan
+                  </button>
+                ) : (
+                  <div></div>
+                )}
+                {/* Cancel and Save buttons on the right */}
+                <div className="flex gap-2">
                 <button
                   type="button"
                   className="px-4 py-2 text-sm border hairline border-foreground/40 font-normal text-foreground hover:bg-foreground hover:text-background transition-colors"
@@ -794,6 +1450,7 @@ export default function ConnectPage() {
                 >
                   Save
                 </button>
+                </div>
               </div>
             )}
           </div>
@@ -905,13 +1562,37 @@ export default function ConnectPage() {
           0% {
             transform: rotate(0deg);
           }
-          16.6% {
-            /* 前1秒等待收纳 */
+          100% {
+            transform: rotate(2160deg); /* 6圈 */
+          }
+        }
+
+        @keyframes portalOrbit {
+          0% {
             transform: rotate(0deg);
           }
           100% {
-            /* 剩余5秒内轨道绕行 (设为 200% 速度) */
             transform: rotate(2160deg); /* 6圈 */
+          }
+        }
+
+        @keyframes counterOrbit {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(-2160deg);
+          }
+        }
+
+        @keyframes glowSync {
+          0%, 100% { 
+            opacity: 0; 
+            filter: blur(2px);
+          }
+          50% { 
+            opacity: 0.9; 
+            filter: blur(12px);
           }
         }
       `}</style>

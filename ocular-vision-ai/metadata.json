@@ -1,0 +1,7 @@
+{
+  "name": "Ocular Vision AI",
+  "description": "A high-performance eye-tracking and facial augmentation demo using MediaPipe and Gemini. It detects eyes in real-time and applies futuristic visual effects and 'aura' analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
