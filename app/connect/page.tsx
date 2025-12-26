@@ -1206,12 +1206,11 @@ export default function ConnectPage() {
         
         <section 
           className={cn(
-            "pointer-events-auto relative flex flex-col items-center",
-            isResonating ? "" : "gap-10 transition-all duration-[2000ms] ease-in-out"
+            "pointer-events-auto relative flex flex-col items-center gap-10",
+            isResonating ? "" : "transition-all duration-[2000ms] ease-in-out"
           )}
           style={{
-            marginTop: activePortal === "none" || activePortal === "resonance" ? "-116px" : "0px",
-            gap: isResonating ? "0px" : undefined
+            marginTop: activePortal === "none" || activePortal === "resonance" ? "-116px" : "0px"
           }}
         >
           {/* 上方法阵 - 单独旋转 */}
