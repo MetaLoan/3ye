@@ -110,13 +110,14 @@ function OrbitalNode({
 }) {
   const Icon = node.icon
   const filled = Boolean(value)
+  const display = formatFieldDisplay(node.field, value, node.label)
 
   return (
     <button
       type="button"
       onClick={() => onSelect(node.field)}
       className={cn(
-        "absolute flex flex-col items-center gap-1 text-[10px] uppercase tracking-[0.18em] transition-all duration-500 ease-out focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-foreground/60",
+        "absolute flex flex-col items-center text-[10px] uppercase tracking-[0.18em] transition-all duration-500 ease-out focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-foreground/60",
         collapsed ? "opacity-0 scale-75" : "opacity-100 scale-100",
       )}
       style={{
@@ -124,6 +125,7 @@ function OrbitalNode({
         left: position.left,
         transform: "translate(-50%, -50%)",
       }}
+      aria-label={display}
     >
       <div
         className={cn(
@@ -133,6 +135,9 @@ function OrbitalNode({
       >
         <Icon className="h-8 w-8" />
       </div>
+      <span className="absolute top-full mt-2 text-[11px] tracking-[0.06em] text-foreground capitalize font-medium">
+        {display}
+      </span>
     </button>
   )
 }
