@@ -173,6 +173,7 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
             "relative rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer bg-background/70 border border-foreground/15 backdrop-blur",
             collapsed ? "opacity-70 scale-95 w-[200px] h-[200px] md:w-[240px] md:h-[240px]" : "opacity-100 scale-100 w-[320px] h-[320px] md:w-[380px] md:h-[380px]",
             "shadow-[0_20px_80px_rgba(0,0,0,0.12)]",
+            collapsed ? "animate-[spinSlow_18s_linear_infinite]" : "",
           )}
         >
           <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/25">
