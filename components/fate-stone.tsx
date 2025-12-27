@@ -171,7 +171,7 @@ export function FateStone() {
       <div 
         className={`flex-1 flex items-center justify-center w-full min-h-0 transition-all duration-700 ease-out`}
         style={{
-          transform: revealed ? 'translateY(-20px) scale(0.9)' : 'translateY(10px) scale(1.1)',
+          transform: revealed ? 'translateY(-20px) scale(0.9)' : 'translateY(10px) scale(1.5)',
         }}
         ref={stoneRef}
       >
