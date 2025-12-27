@@ -51,7 +51,7 @@ export default function StonePage() {
 
           <div className="flex-1 relative">
             {mode === "stone" ? (
-              <div className="animate-in fade-in duration-700">
+              <div className="animate-in fade-in duration-700 h-full">
                 <FateStone />
               </div>
             ) : (

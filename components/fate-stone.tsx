@@ -166,9 +166,9 @@ export function FateStone() {
   }, [])
 
   return (
-    <div className="relative flex flex-col items-center justify-start pt-8 h-full">
+    <div className="relative flex flex-col items-center h-full">
       {/* Stone */}
-      <div className="relative" ref={stoneRef}>
+      <div className="flex-1 flex items-center justify-center w-full min-h-0" ref={stoneRef}>
         {/* 3D 多面体石头 */}
         <div
           onMouseDown={startHold}
@@ -192,7 +192,7 @@ export function FateStone() {
       </div>
 
       {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="h-[200px] flex flex-col items-center justify-start mt-4 absolute bottom-0 left-0 right-0">
+      <div className="shrink-0 h-[220px] flex flex-col items-center justify-start pb-4 w-full">
         {/* Oracle result */}
         {revealed && (
           <div 
