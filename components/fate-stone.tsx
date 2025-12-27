@@ -166,9 +166,9 @@ export function FateStone() {
   }, [])
 
   return (
-    <div className="relative flex flex-col items-center justify-start pt-8">
+    <div className="h-full flex flex-col items-center justify-between relative">
       {/* Stone */}
-      <div className="relative" ref={stoneRef}>
+      <div className="flex-1 flex items-center justify-center w-full" ref={stoneRef}>
         {/* 3D 多面体石头 */}
         <div
           onMouseDown={startHold}
@@ -176,9 +176,11 @@ export function FateStone() {
           onMouseLeave={releaseStone}
           onTouchStart={startHold}
           onTouchEnd={releaseStone}
+          className="transition-all duration-700 ease-out"
           style={{ 
             cursor: revealed ? 'default' : 'pointer',
-            pointerEvents: revealed ? 'none' : 'auto'
+            pointerEvents: revealed ? 'none' : 'auto',
+            transform: revealed ? 'scale(0.8) translateY(-20px)' : 'scale(1) translateY(0)'
           }}
         >
           <Stone3D 
@@ -191,8 +193,8 @@ export function FateStone() {
         </div>
       </div>
 
-      {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="min-h-[200px] flex flex-col items-center justify-start mt-4">
+      {/* 底部内容区域 */}
+      <div className="flex-none w-full flex flex-col items-center justify-end pb-5">
         {/* Oracle result */}
         {revealed && (
           <div 
@@ -214,7 +216,7 @@ export function FateStone() {
         {/* Choice buttons */}
         {showChoice && (
           <div 
-            className="flex gap-4 w-full max-w-sm px-6 mt-6 pb-5 mb-5 transition-all duration-500 ease-out"
+            className="flex gap-4 w-full max-w-sm px-6 mt-6 transition-all duration-500 ease-out"
             style={{
               opacity: isFadingOut ? 0 : 1,
               transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',
