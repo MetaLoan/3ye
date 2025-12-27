@@ -1490,12 +1490,12 @@ export default function ConnectPage() {
       {/* 旋转/调试时的提示文案：依次出现、底部显示、纯黑不透明 */}
       {isResonating && !isDoorOpening && (
         <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center pb-10">
-          <div className="text-center text-black text-xs tracking-[0.3em] font-light space-y-2">
+          <div className="text-center text-black text-xs font-black space-y-2">
             <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-              Calibrating soul resonance frequency...
+              Calibrating Soul Resonance Frequency...
             </div>
             <div className="animate-fade-in" style={{ animationDelay: "1000ms" }}>
-              Generating results...
+              Generating Results...
             </div>
           </div>
         </div>
