@@ -214,7 +214,7 @@ export function FateStone() {
         {/* Choice buttons */}
         {showChoice && (
           <div 
-            className="flex gap-4 w-full max-w-sm px-6 mt-6 transition-all duration-500 ease-out"
+            className="flex gap-4 w-full max-w-sm px-6 mt-6 pb-5 mb-5 transition-all duration-500 ease-out"
             style={{
               opacity: isFadingOut ? 0 : 1,
               transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',

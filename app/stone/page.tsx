@@ -6,7 +6,7 @@ export default function StonePage() {
   return (
     <main className="h-screen bg-background overflow-hidden flex flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="p-6 pt-12 max-w-screen-sm mx-auto">
+        <div className="p-6 pt-12 pb-[84px] max-w-screen-sm mx-auto">
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-light mb-4">
               <InkRevealText text="The Fate Stone" />
