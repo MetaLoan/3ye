@@ -478,30 +478,14 @@ export function ManifestationRecorder() {
                 <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
                   <span className="inline-block">Input Your Need</span>
                 </div>
-                <div className="text-[11px] opacity-50 font-light whitespace-nowrap overflow-hidden mt-1">
-                  <span className="inline-block">Hold mic or type to create audio</span>
-                </div>
               </div>
 
               {/* 中间：提示文字（idle）或红色波形（recording）*/}
-              <div className="flex-1 min-w-0 relative h-4">
-                {/* 提示文字 - idle 时显示 */}
-                <div
-                  className="absolute inset-0 flex items-center justify-center transition-all duration-300"
-                  style={{ 
-                    opacity: recorderState === "idle" ? 1 : 0,
-                    transform: recorderState === "idle" ? "translateX(0)" : "translateX(-20px)",
-                  }}
-                >
-                  <span className="text-xs opacity-40 font-light whitespace-nowrap">Hold mic to record (max 30s)</span>
-                </div>
-
-                {/* 红色波形 - 从麦克风位置向左生长 */}
-                {recorderState === "recording" && (
-                  <div className="absolute right-0 top-0 h-4 flex items-center justify-end gap-[1px]">
+              <div className="flex-1 min-w-0 relative h-12 flex items-center justify-center">
+                {recorderState === "recording" ? (
+                  <div className="absolute inset-0 h-4 flex items-center justify-end gap-[1px]">
                     {Array.from({ length: 36 }).map((_, i) => {
                       const progress = (recordingTime / 30) * 100
-                      // 反转逻辑：i=0 在最左边，应该最后显示；i=35 在最右边，应该最先显示
                       const barProgress = (i / 36) * 100
                       const isVisible = barProgress <= progress
                       
@@ -524,6 +508,10 @@ export function ManifestationRecorder() {
                       )
                     })}
                   </div>
+                ) : (
+                  <span className="text-xs opacity-40 font-light whitespace-nowrap">
+                    Hold mic or type to create audio
+                  </span>
                 )}
               </div>
 
