@@ -447,6 +447,34 @@ export function ManifestationRecorder() {
     }
   }, [])
 
+  const renderWaveform = () => (
+    <div className="relative w-full h-4 flex items-center justify-end gap-[1px]">
+      {Array.from({ length: 36 }).map((_, i) => {
+        const progress = (recordingTime / 30) * 100
+        const barProgress = (i / 36) * 100
+        const isVisible = barProgress <= progress
+        
+        return (
+          <div
+            key={i}
+            className="w-[4px] rounded-full bg-red-500 transition-all duration-200"
+            style={{
+              height: `${Math.sin((35 - i) * 0.4) * 30 + 60}%`,
+              opacity: isVisible ? 1 : 0,
+              transform: `scaleY(${isVisible ? 1 : 0})`,
+              animationName: isVisible ? "pulse" : "none",
+              animationDuration: isVisible ? "0.8s" : undefined,
+              animationTimingFunction: isVisible ? "ease-in-out" : undefined,
+              animationIterationCount: isVisible ? "infinite" : undefined,
+              animationDelay: `${(35 - i) * 25}ms`,
+            }}
+            suppressHydrationWarning
+          />
+        )
+      })}
+    </div>
+  )
+
   return (
     <div className="space-y-4">
       <div className="mb-6">
@@ -475,44 +503,24 @@ export function ManifestationRecorder() {
             >
               {/* 左侧：标题说明 */}
               <div className="shrink-0 w-48 sm:w-64 overflow-hidden">
-                <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
-                  <span className="inline-block">Input Your Need</span>
-                </div>
-                <div className="text-xs opacity-60 font-light whitespace-nowrap overflow-hidden mt-1">
-                  <span className="inline-block">Hold mic or type to create audio</span>
-                </div>
+                {recorderState === "recording" ? (
+                  <div className="h-12 flex items-center">
+                    {renderWaveform()}
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
+                      <span className="inline-block">Input Your Need</span>
+                    </div>
+                    <div className="text-xs opacity-60 font-light whitespace-nowrap overflow-hidden mt-1">
+                      <span className="inline-block">Hold mic or type to create audio</span>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* 中间：提示文字（idle）或红色波形（recording）*/}
-              <div className="flex-1 min-w-0 relative h-12 flex items-center justify-center">
-                {recorderState === "recording" ? (
-                  <div className="absolute inset-0 h-4 flex items-center justify-end gap-[1px]">
-                    {Array.from({ length: 36 }).map((_, i) => {
-                      const progress = (recordingTime / 30) * 100
-                      const barProgress = (i / 36) * 100
-                      const isVisible = barProgress <= progress
-                      
-                      return (
-                        <div
-                          key={i}
-                          className="w-[4px] rounded-full bg-red-500 transition-all duration-200"
-                          style={{
-                            height: `${Math.sin((35 - i) * 0.4) * 30 + 60}%`,
-                            opacity: isVisible ? 1 : 0,
-                            transform: `scaleY(${isVisible ? 1 : 0})`,
-                            animationName: isVisible ? "pulse" : "none",
-                            animationDuration: isVisible ? "0.8s" : undefined,
-                            animationTimingFunction: isVisible ? "ease-in-out" : undefined,
-                            animationIterationCount: isVisible ? "infinite" : undefined,
-                            animationDelay: `${(35 - i) * 25}ms`,
-                          }}
-                          suppressHydrationWarning
-                        />
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </div>
+              {/* 中间占位 */}
+              <div className="flex-1 min-w-0 relative h-12 flex items-center justify-center" />
 
               {/* 右侧：操作按钮组 */}
               <div className="flex items-center gap-2">
