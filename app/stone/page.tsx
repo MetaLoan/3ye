@@ -13,7 +13,7 @@ export default function StonePage() {
     <main className="h-screen bg-background overflow-hidden flex flex-col">
       <div className="h-[calc(100vh-84px)] overflow-hidden">
         <div className="p-6 pt-6 max-w-screen-sm mx-auto flex flex-col h-full">
-          <div className="shrink-0 mb-2 text-center">
+          <div className="shrink-0 mb-2 text-center relative z-10">
             <h1 className="text-4xl font-light mb-4">
               <InkRevealText 
                 key={mode} 
@@ -49,7 +49,7 @@ export default function StonePage() {
             </div>
           </div>
 
-          <div className="flex-1 relative">
+          <div className="flex-1 relative z-0">
             {mode === "stone" ? (
               <div className="animate-in fade-in duration-700 h-full">
                 <FateStone />
