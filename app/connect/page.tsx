@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { InkRevealText } from "@/components/ink-reveal-text"
 import { OracleInteractiveEye } from "@/components/oracle-interactive-eye"
+import { SolarSystem } from "@/components/solar-system"
 import { cn } from "@/lib/utils"
 
 // 自定义十二星座线性图标组件
@@ -1052,22 +1053,21 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
         className="relative flex items-center justify-center focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-foreground/60"
       >
         {/* 谐振时的随机彩虹渐变外发光 - 移到法阵盘外部底部 */}
-        {isResonating && (
-          <div 
-            className={cn(
-              "absolute rounded-full z-[-1]",
-              collapsed ? "-inset-1" : "-inset-2"
-            )}
-            style={{
-              background: 'conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0000)',
-              animation: `
-                spinSlow ${id === 'subjectA' ? '1.5s' : '2.1s'} linear infinite ${id === 'subjectA' ? '' : 'reverse'},
-                glowSync 6s ease-in-out forwards
-              `,
-              transform: `rotate(${id === 'subjectA' ? '45deg' : '210deg'})`
-            }}
-          />
-        )}
+        <div 
+          className={cn(
+            "absolute rounded-full z-[-1] transition-opacity duration-500",
+            collapsed ? "-inset-1" : "-inset-2",
+            isResonating ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          style={{
+            background: 'conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0000)',
+            animation: isResonating ? `
+              spinSlow ${id === 'subjectA' ? '1.5s' : '2.1s'} linear infinite ${id === 'subjectA' ? '' : 'reverse'},
+              glowSync 6s ease-in-out forwards
+            ` : "none",
+            transform: `rotate(${id === 'subjectA' ? '45deg' : '210deg'})`
+          }}
+        />
 
         <div
           className={cn(
@@ -1109,9 +1109,50 @@ function PortalRing({ id, label, codename, invert, activePortal, onActivate, val
   )
 }
 
+// 玄学描述段落组件 - 实现整段墨迹揭示效果
+function InkRevealParagraph({ children, delay = 0, autoScroll = false, enableAutoScroll = true, onReveal }: { children: React.ReactNode, delay?: number, autoScroll?: boolean, enableAutoScroll?: boolean, onReveal?: () => void }) {
+  const [revealed, setRevealed] = useState(false)
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setRevealed(true), delay)
+    return () => clearTimeout(timer)
+  }, [delay])
+
+  useEffect(() => {
+    if (revealed && autoScroll && enableAutoScroll && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "end" })
+    }
+  }, [revealed, autoScroll, enableAutoScroll])
+
+  useEffect(() => {
+    if (revealed && onReveal) {
+      onReveal()
+    }
+  }, [revealed, onReveal])
+
+  return (
+    <div 
+      ref={ref}
+      className={cn(
+        "transition-all duration-1000",
+        revealed ? "ink-reveal opacity-100" : "opacity-0 translate-y-2"
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default function ConnectPage() {
   const [activePortal, setActivePortal] = useState<PortalId | "none">("none")
   const [isResonating, setIsResonating] = useState(false)
+  const [isDoorOpening, setIsDoorOpening] = useState(false)
+  const outerSphereRef = useRef<HTMLButtonElement | null>(null)
+  const [movingSphere, setMovingSphere] = useState<null | { left: number; top: number; deltaY: number }>(null)
+  const [movingSphereGo, setMovingSphereGo] = useState(false)
+  const [contentManualScroll, setContentManualScroll] = useState(false)
+  const contentScrollRef = useRef<HTMLDivElement | null>(null)
   const [portalValues, setPortalValues] = useState<Record<PortalId, Record<FieldKey, string>>>({
     subjectA: { ...emptyFields },
     subjectB: { ...emptyFields },
@@ -1141,22 +1182,49 @@ export default function ConnectPage() {
   }
 
   const handleResonance = () => {
-    if (isResonating) return
+    if (isResonating || isDoorOpening) return
     
     setIsResonating(true)
-    setActivePortal("none") // 这里设为 none 其实在 PortalRing 逻辑里是不折叠的意思
-    
-    // 我们需要一个让两者都折叠的状态
-    // 修改 PortalRing 的逻辑或者在这里设一个特殊值
-    // 既然 PortalRing 判断 collapsed 是 activePortal !== id && activePortal !== "none"
-    // 那我们设一个既不是 id 也不是 "none" 的值即可，比如 "resonance"
     setActivePortal("resonance" as any)
     
-    // 6秒后结束谐振 (2s 放大 + 2s 维持 + 2s 缩小)
+    // 1. 6秒后结束旋转，先恢复到初始折叠状态
     setTimeout(() => {
       setIsResonating(false)
-      setActivePortal("subjectA") // 恢复默认状态
+      setActivePortal("none") // 恢复到两个法阵折叠的状态
+      
+      // 2. 等待 1.5 秒让法阵完全回到原位，中心线重新出现
+      setTimeout(() => {
+        // Capture current on-screen position of the outer sphere, then animate a fixed clone to top=30px.
+        const rect = outerSphereRef.current?.getBoundingClientRect()
+        if (rect) {
+          setMovingSphere({
+            left: rect.left,
+            top: rect.top,
+            deltaY: 30 - rect.top, // final top edge = 30px
+          })
+          setMovingSphereGo(false)
+          requestAnimationFrame(() => setMovingSphereGo(true))
+        } else {
+          setMovingSphere(null)
+          setMovingSphereGo(false)
+        }
+        setContentManualScroll(false)
+        setIsDoorOpening(true)
+        
+        // 3. 开门动画持续 3 秒
+        setTimeout(() => {
+          // 这里可以添加后续逻辑
+        }, 3000)
+      }, 1500)
     }, 6000)
+  }
+  
+  const handleCloseDoor = () => {
+    setIsDoorOpening(false)
+    setMovingSphere(null)
+    setMovingSphereGo(false)
+    setContentManualScroll(false)
+    setActivePortal("none")
   }
 
   const handleSave = (valueOverride?: string) => {
@@ -1178,7 +1246,10 @@ export default function ConnectPage() {
 
   return (
     <main 
-      className="relative min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden"
+      className={cn(
+        "relative min-h-screen bg-background text-foreground flex flex-col",
+        isDoorOpening ? "overflow-hidden" : "overflow-x-hidden"
+      )}
       onClick={() => {
         if (!isResonating && !editing) {
           setActivePortal("none")
@@ -1187,8 +1258,8 @@ export default function ConnectPage() {
     >
       <div className={cn(
         "relative px-6 pt-12 pb-4 max-w-screen-lg mx-auto shrink-0 w-full",
-        isResonating ? "opacity-0 invisible transition-all duration-700" : "opacity-100 visible transition-opacity duration-700",
-        editing ? "z-20" : "z-50"
+        (isResonating || isDoorOpening) ? "opacity-0 invisible transition-all duration-700" : "opacity-100 visible transition-opacity duration-700",
+        (editing || isDoorOpening) ? "z-20" : "z-50"
       )}>
         <div className="mb-0">
           <h1 className="text-4xl font-light mb-2">
@@ -1200,25 +1271,30 @@ export default function ConnectPage() {
         </div>
       </div>
 
-      <div className="flex-1 relative flex items-center justify-center pointer-events-none z-20 w-full py-20">
+      <div className={cn(
+        "flex-1 relative flex items-center justify-center pointer-events-none w-full py-20",
+        isDoorOpening ? "overflow-visible z-[60]" : "z-20"
+      )}>
         {/* 用于视觉居中的参考占位符，高度与顶部标题区域一致，以抵消其对中心点的影响 */}
         <div className="absolute top-0 h-[116px] w-full pointer-events-none" />
         
         <section 
           className={cn(
-            "pointer-events-auto relative flex flex-col items-center gap-10",
-            isResonating ? "" : "transition-all duration-[2000ms] ease-in-out"
+            "relative flex flex-col items-center gap-10",
+            isDoorOpening ? "pointer-events-none overflow-visible" : "pointer-events-auto transition-all duration-[2000ms] ease-in-out"
           )}
           style={{
-            marginTop: activePortal === "none" || activePortal === "resonance" ? "-116px" : "0px"
+            marginTop: activePortal === "none" || (activePortal as any) === "resonance" || isDoorOpening ? "-116px" : "0px"
           }}
         >
-          {/* 上方法阵 - 单独旋转 */}
+          {/* 上方法阵 - 单独旋转/向上移动 */}
           <div 
-            className="relative"
+            className="relative z-30 will-change-transform"
             style={{
-              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "",
-              transformOrigin: "center calc(100% + 40px)"
+              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "none",
+              transformOrigin: "center calc(100% + 40px)",
+              transform: isDoorOpening ? "translateY(-150vh)" : "translateY(0)",
+              transition: isDoorOpening ? "transform 2s ease-in-out" : "none"
             }}
           >
             <PortalRing
@@ -1233,22 +1309,38 @@ export default function ConnectPage() {
             />
           </div>
 
-          {/* 中心区域 - 不旋转 */}
+            {/* 中心区域 - 不旋转 */}
           <div className="relative flex items-center justify-center w-full py-1">
-            <div className={cn(
-              "absolute w-[200vw] h-px bg-gradient-to-r from-transparent via-foreground/40 to-transparent transition-opacity duration-500",
-              isResonating ? "opacity-0" : "opacity-100"
-            )} />
+            {/* 中线 - 常态下的细线 */}
+            <div 
+              className={cn(
+                "absolute left-1/2 -translate-x-1/2 w-[200vw] h-px bg-foreground transition-opacity duration-500",
+                isResonating || isDoorOpening ? "opacity-0" : "opacity-100"
+              )}
+            />
+            
+            {/* 外部球体（原始）- 开门时隐藏，避免任何布局/滚动影响动画 */}
             <button
               type="button"
+              ref={outerSphereRef}
               onClick={(e) => {
                 e.stopPropagation()
-                handleResonance()
+                if (isDoorOpening) {
+                  handleCloseDoor()
+                } else {
+                  handleResonance()
+                }
               }}
               className={cn(
-                "relative flex items-center justify-center w-16 h-16 rounded-full border border-foreground bg-background transition-all duration-[2000ms] ease-in-out",
-                isResonating ? "shadow-[0_0_5px_rgba(0,0,0,0.1)]" : "hover:scale-105"
+                "relative flex items-center justify-center w-16 h-16 rounded-full border bg-background z-50 will-change-[transform,opacity]",
+                isDoorOpening ? "border-white opacity-0 pointer-events-none" : "border-foreground opacity-100",
+                isResonating ? "shadow-[0_0_5px_rgba(0,0,0,0.1)]" : ""
               )}
+              style={{
+                transform: "translateY(0)",
+                opacity: isDoorOpening ? 0 : 1,
+                transition: "opacity 0.2s ease-in-out"
+              }}
             >
               {/* 内环 - 黑色背景 */}
               <div className="absolute inset-[6px] rounded-full bg-foreground flex items-center justify-center overflow-hidden">
@@ -1269,12 +1361,14 @@ export default function ConnectPage() {
             </button>
           </div>
 
-          {/* 下方法阵 - 单独旋转 */}
+          {/* 下方法阵 - 单独旋转/向下移动 */}
           <div 
-            className="relative"
+            className="relative z-30 will-change-transform"
             style={{
-              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "",
-              transformOrigin: "center calc(0% - 40px)"
+              animation: isResonating ? "portalOrbit 6s ease-in-out forwards" : "none",
+              transformOrigin: "center calc(0% - 40px)",
+              transform: isDoorOpening ? "translateY(150vh)" : "translateY(0)",
+              transition: isDoorOpening ? "transform 2s ease-in-out" : "none"
             }}
           >
             <PortalRing
@@ -1298,6 +1392,137 @@ export default function ConnectPage() {
           className="fixed inset-x-0 top-0 bottom-20 z-30 backdrop-blur-md bg-background/50"
           onClick={() => setEditing(null)}
         />
+      )}
+
+      {/* 开门后的全屏黑色背景 - 使用 clip-path 从中心展开，不影响其他元素渲染 */}
+      <div 
+        className={cn(
+          "fixed inset-0 z-[55] bg-black transition-all duration-[1500ms] ease-in-out will-change-[clip-path,opacity] flex flex-col items-center",
+          isDoorOpening ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+        )}
+        style={{
+          clipPath: isDoorOpening ? 'inset(0% 0% 0% 0%)' : 'inset(50% 0% 50% 0%)'
+        }}
+      >
+        <SolarSystem active={isDoorOpening} />
+
+        {/* 结果内容层 - 仅正文滚动（顶部球体/标题不滚动） */}
+        {isDoorOpening && (
+          <div
+            className="absolute inset-0 z-10 pointer-events-auto flex flex-col items-center"
+            style={{
+              animation: "fade-in-simple 0.1s ease-out 1.9s forwards",
+              opacity: 0,
+            }}
+          >
+            {/* 顶部固定区：为外部球体（克隆）预留空间 + 标题（不随正文滚动） */}
+            <div className="w-full max-w-2xl px-8 text-center shrink-0 pt-[114px] pb-6">
+              <h2 className="text-xl md:text-2xl font-light text-white tracking-[0.3em] uppercase whitespace-nowrap">
+                <InkRevealText text="Celestial Synchrony" delay={2100} />
+              </h2>
+            </div>
+
+            {/* 正文滚动区 */}
+            <div
+              className="flex-1 w-full max-w-2xl px-8 overflow-y-auto hide-scrollbar"
+              ref={contentScrollRef}
+              onPointerDown={() => setContentManualScroll(true)} // 仅用户主动交互时禁用自动滚动，避免程序滚动误判
+            >
+              <div className="text-sm md:text-base text-white font-light leading-[1.8] text-justify space-y-8 pb-48">
+                <InkRevealParagraph delay={2600} autoScroll enableAutoScroll={!contentManualScroll}>
+                  <p>
+                    In the vast architecture of the cosmos, two distinct spectral signatures have intersected at a precise temporal junction. This intersection is not merely a chance encounter within the physical realm, but a profound alignment of vibrational states that have traveled through multiple dimensions of consciousness to reach this singular moment of unified clarity. The harmonic convergence observed between Subject A and Subject B suggests a deeper connection that transcends conventional biological or psychological explanations, pointing toward an ancient resonance that precedes individual existence.
+                  </p>
+                </InkRevealParagraph>
+
+                <InkRevealParagraph delay={3600} autoScroll enableAutoScroll={!contentManualScroll}>
+                  <p>
+                    The data streams flowing from the ocular imprint analysis reveal a complex tapestry of shared archetypal patterns. Every micro‑vibration in the iris structure acts as a biological record of cosmic history, and when these records synchronize, they create a resonant frequency measurable across the quantum field. This alignment indicates a high probability of spiritual entanglement, where the experiences of one soul are mirrored and amplified by the other, forming a feedback loop of conscious evolution that propels both entities toward a higher state of awareness.
+                  </p>
+                </InkRevealParagraph>
+
+                <InkRevealParagraph delay={4600} autoScroll enableAutoScroll={!contentManualScroll}>
+                  <p>
+                    As we examine the deeper metadata of this resonance, the alignment extends beyond personality traits or shared interests. It reaches into the core of the auric field, where the fundamental energy polarities of North and South nodes settle into a rare equilibrium. This balance provides a stable foundation for shared purpose, allowing the combined charge of both participants to pass through dissonant frequencies of the mundane world with minimal loss. The resulting resonance is both protective and expansive, shielding the collective consciousness while opening doors to creative and spiritual exploration.
+                  </p>
+                </InkRevealParagraph>
+
+                <InkRevealParagraph delay={5600} autoScroll enableAutoScroll={!contentManualScroll}>
+                  <p>
+                    Temporal analysis of your charts aligned with the ocular capture suggests a narrow celestial window. In this window, the barrier between the subconscious and the universal mind thins, enabling direct transfer of intuitive knowledge and emotional understanding. This state—often described in older mystical frameworks as a “threshold moment”—reduces egoic boundaries and increases the signal‑to‑noise ratio of meaning. In practice, this makes small gestures feel charged with significance, and silence becomes a medium for unspoken agreement rather than distance.
+                  </p>
+                </InkRevealParagraph>
+
+                <InkRevealParagraph delay={6600} autoScroll enableAutoScroll={!contentManualScroll}>
+                  <p>
+                    In tangible terms, the resonance manifests as an effortless rhythm in communication, synchronous decision‑making, and a sense of mutual support that arrives before it is requested. When challenges arise, the combined field acts as a stabilizer: it slows reactive spirals and sharpens clarity, offering both calm and momentum. This is not the absence of friction, but the presence of an underlying alignment that converts friction into forward motion. Such a bond invites both individuals to step into a shared trajectory, weaving a destiny that feels both authored and discovered.
+                  </p>
+                </InkRevealParagraph>
+
+                <InkRevealParagraph
+                  delay={7600}
+                  autoScroll
+                  enableAutoScroll={!contentManualScroll}
+                  onReveal={() => {
+                    if (contentScrollRef.current) {
+                      contentScrollRef.current.scrollTo({
+                        top: contentScrollRef.current.scrollHeight,
+                        behavior: "smooth",
+                      })
+                    }
+                  }}
+                >
+                  <p>
+                    The final synthesis—from the geometry of the iris to the cadence of your timelines—suggests that this connection is not incidental. It functions as a beacon inside the larger harmony of the system: a point where two streams meet, exchange, and continue with greater coherence. If you nurture it with honesty, time, and attention, the resonance will remain a living instrument: responsive, evolving, and capable of guiding you through uncertainty without diminishing either self. Let it be deliberate. Let it be kind. Let it be real.
+                  </p>
+                </InkRevealParagraph>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 底部渐变遮挡 - 避免文字生硬消失 */}
+        {isDoorOpening && (
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-20" />
+        )}
+      </div>
+
+      {/* 旋转/调试时的提示文案：依次出现、底部显示、纯黑不透明 */}
+      {isResonating && !isDoorOpening && (
+        <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center pb-10">
+          <div className="text-center text-black text-xs tracking-[0.3em] font-light space-y-2">
+            <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
+              Calibrating soul resonance frequency...
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: "1000ms" }}>
+              Generating results...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 外部球体（克隆）- 用 fixed + 纯像素 transform，彻底避免 vh / 布局抖动 */}
+      {isDoorOpening && movingSphere && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleCloseDoor()
+          }}
+          className="fixed z-[60] w-16 h-16 rounded-full border border-white bg-background will-change-transform"
+          style={{
+            left: `${movingSphere.left}px`,
+            top: `${movingSphere.top}px`,
+            transform: movingSphereGo ? `translateY(${movingSphere.deltaY}px)` : "translateY(0)",
+            transition: "transform 2s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        >
+          <div className="absolute inset-[6px] rounded-full bg-foreground flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 rounded-full border border-white/10 animate-[pulseHalo_3s_ease-in-out_infinite]" />
+            <div className="absolute inset-1 rounded-full border border-white/5 animate-[spinSlow_12s_linear_infinite]" />
+            <OracleInteractiveEye direction="center" className="w-9 h-9" inverted={true} />
+          </div>
+        </button>
       )}
 
       {editing ? (
@@ -1582,6 +1807,11 @@ export default function ConnectPage() {
           100% {
             transform: rotate(-2160deg);
           }
+        }
+
+        @keyframes fade-in-simple {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         @keyframes glowSync {

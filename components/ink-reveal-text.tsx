@@ -7,19 +7,28 @@ interface InkRevealTextProps {
   text: string
   className?: string
   staggerDelay?: number
+  delay?: number
 }
 
-export function InkRevealText({ text, className, staggerDelay = 50 }: InkRevealTextProps) {
+export function InkRevealText({ text, className, staggerDelay = 50, delay = 0 }: InkRevealTextProps) {
   const [revealedCount, setRevealedCount] = useState(0)
+  const [shouldStart, setShouldStart] = useState(delay === 0)
 
   useEffect(() => {
-    if (revealedCount < text.length) {
+    if (delay > 0) {
+      const timer = setTimeout(() => setShouldStart(true), delay)
+      return () => clearTimeout(timer)
+    }
+  }, [delay])
+
+  useEffect(() => {
+    if (shouldStart && revealedCount < text.length) {
       const timer = setTimeout(() => {
         setRevealedCount((prev) => prev + 1)
       }, staggerDelay)
       return () => clearTimeout(timer)
     }
-  }, [revealedCount, text.length, staggerDelay])
+  }, [shouldStart, revealedCount, text.length, staggerDelay])
 
   return (
     <span className={cn("inline-block", className)}>
