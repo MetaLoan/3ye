@@ -474,7 +474,7 @@ export function ManifestationRecorder() {
               }`}
             >
               {/* 左侧：标题说明 */}
-              <div className="shrink-0 w-32 sm:w-40 overflow-hidden">
+              <div className="shrink-0 w-48 sm:w-64 overflow-hidden">
                 <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
                   <span className="inline-block">Input Your Need</span>
                 </div>
