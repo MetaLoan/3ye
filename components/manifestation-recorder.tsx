@@ -682,19 +682,28 @@ export function ManifestationRecorder() {
         >
           <div className="overflow-hidden">
             <div
-              className="p-4 transition-opacity duration-300"
+              className="p-4 transition-opacity duration-300 space-y-4"
               style={{ opacity: recorderState === "generating" ? 1 : 0 }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-3 h-3 rounded-full holographic holographic-animate" />
                 <span className="text-sm font-light">Transmuting your voice...</span>
               </div>
-              <button
-                disabled
-                className="w-full py-3 text-sm font-light holographic holographic-animate text-black cursor-wait"
-              >
-                {generatingMessages[generatingMessageIndex]}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  disabled
+                  className="w-full py-3 text-sm font-light holographic holographic-animate text-black cursor-wait"
+                >
+                  {generatingMessages[generatingMessageIndex]}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelRecording}
+                  className="px-4 py-3 border hairline border-foreground text-sm font-light hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
