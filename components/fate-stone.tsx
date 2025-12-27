@@ -166,9 +166,9 @@ export function FateStone() {
   }, [])
 
   return (
-    <div className="relative flex flex-col items-center justify-start pt-8">
+    <div className="h-full flex flex-col items-center justify-between relative">
       {/* Stone */}
-      <div className="relative" ref={stoneRef}>
+      <div className="flex-1 flex items-center justify-center w-full" ref={stoneRef}>
         {/* 3D 多面体石头 */}
         <div
           onMouseDown={startHold}
@@ -176,9 +176,11 @@ export function FateStone() {
           onMouseLeave={releaseStone}
           onTouchStart={startHold}
           onTouchEnd={releaseStone}
+          className="transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1)"
           style={{ 
             cursor: revealed ? 'default' : 'pointer',
-            pointerEvents: revealed ? 'none' : 'auto'
+            pointerEvents: revealed ? 'none' : 'auto',
+            transform: revealed ? 'scale(0.8) translateY(-40px)' : 'scale(1) translateY(0)'
           }}
         >
           <Stone3D 
@@ -191,53 +193,13 @@ export function FateStone() {
         </div>
       </div>
 
-      {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="h-[200px] flex flex-col items-center justify-start mt-4">
-        {/* Oracle result */}
-        {revealed && (
-          <div 
-            className="text-center space-y-4 transition-all duration-500 ease-out"
-            style={{
-              opacity: isFadingOut ? 0 : 1,
-              transform: isFadingOut ? 'translateY(-20px)' : 'translateY(0)',
-            }}
-          >
-            <div className="text-5xl font-light tracking-wider">
-              <InkRevealText text={oracle.result} />
-            </div>
-            <div className="text-sm opacity-60 max-w-xs mx-auto leading-relaxed">
-              <InkRevealText text={oracle.message} />
-            </div>
-          </div>
-        )}
-
-        {/* Choice buttons */}
-        {showChoice && (
-          <div 
-            className="flex gap-4 w-full max-w-sm px-6 mt-6 pb-5 mb-5 transition-all duration-500 ease-out"
-            style={{
-              opacity: isFadingOut ? 0 : 1,
-              transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',
-            }}
-          >
-            <button
-              onClick={() => makeChoice("follow")}
-              className="flex-1 border hairline border-foreground py-3 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal"
-            >
-              Follow
-            </button>
-            <button
-              onClick={() => makeChoice("rebel")}
-              className="flex-1 border hairline border-foreground bg-foreground text-background py-3 text-sm font-light hover:bg-background hover:text-foreground transition-all ink-reveal-delay-1"
-            >
-              No Way
-            </button>
-          </div>
-        )}
-
-        {/* Instruction text / Holding messages */}
-        {!revealed && (
-          <div className="text-center h-[60px] flex flex-col items-center justify-center overflow-hidden">
+      <div className="flex-none w-full flex flex-col items-center justify-end pb-5 relative min-h-[160px]">
+        {/* Instruction text / Holding messages - Always rendered but faded out when revealed */}
+        <div 
+          className={`text-center h-[60px] flex flex-col items-center justify-center overflow-hidden absolute bottom-5 left-0 right-0 transition-all duration-700 ease-out ${
+            revealed ? 'opacity-0 translate-y-4 pointer-events-none delay-0' : 'opacity-100 translate-y-0 delay-300'
+          }`}
+        >
             {showUnfocusedMessage ? (
               <p className="text-xs opacity-60 font-light tracking-wide italic">
                 <InkRevealText text={unfocusedMessage} staggerDelay={30} />
@@ -264,6 +226,52 @@ export function FateStone() {
                 </p>
                 <p className="text-xs opacity-20 mt-2">3 times remaining today</p>
               </>
+            )}
+        </div>
+
+        {/* Oracle result - Positioned relative to take up space */}
+        {revealed && (
+          <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-forwards ease-out">
+            <div 
+              className="text-center space-y-4 transition-all duration-500 ease-out mb-6"
+              style={{
+                opacity: isFadingOut ? 0 : 1,
+                transform: isFadingOut ? 'translateY(-20px)' : 'translateY(0)',
+              }}
+            >
+              <div className="text-5xl font-light tracking-wider">
+                <InkRevealText text={oracle.result} />
+              </div>
+              <div className="text-sm opacity-60 max-w-xs mx-auto leading-relaxed">
+                <InkRevealText text={oracle.message} />
+              </div>
+            </div>
+
+            {/* Choice buttons */}
+            {showChoice ? (
+              <div 
+                className="flex gap-4 w-full max-w-sm px-6 transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-4"
+                style={{
+                  opacity: isFadingOut ? 0 : 1,
+                  transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',
+                }}
+              >
+                <button
+                  onClick={() => makeChoice("follow")}
+                  className="flex-1 border hairline border-foreground py-3 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal"
+                >
+                  Follow
+                </button>
+                <button
+                  onClick={() => makeChoice("rebel")}
+                  className="flex-1 border hairline border-foreground bg-foreground text-background py-3 text-sm font-light hover:bg-background hover:text-foreground transition-all ink-reveal-delay-1"
+                >
+                  No Way
+                </button>
+              </div>
+            ) : (
+               /* Placeholder to keep layout stable if needed, or just let it expand */
+               <div className="h-[46px] w-full" /> 
             )}
           </div>
         )}
