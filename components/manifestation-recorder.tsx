@@ -502,21 +502,31 @@ export function ManifestationRecorder() {
               }`}
             >
               {/* 左侧：标题说明 */}
-              <div className="shrink-0 w-48 sm:w-64 overflow-hidden">
-                {recorderState === "recording" ? (
-                  <div className="h-12 flex items-center">
-                    {renderWaveform()}
+              <div className="shrink-0 w-48 sm:w-64 overflow-hidden relative h-12">
+                <div
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-300 ${
+                    recorderState === "recording"
+                      ? "opacity-0 -translate-y-2 pointer-events-none"
+                      : "opacity-100 translate-y-0"
+                  }`}
+                >
+                  <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
+                    <span className="inline-block">Input Your Need</span>
                   </div>
-                ) : (
-                  <>
-                    <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
-                      <span className="inline-block">Input Your Need</span>
-                    </div>
-                    <div className="text-xs opacity-60 font-light whitespace-nowrap overflow-hidden mt-1">
-                      <span className="inline-block">Hold mic or type to create audio</span>
-                    </div>
-                  </>
-                )}
+                  <div className="text-xs opacity-60 font-light whitespace-nowrap overflow-hidden mt-1">
+                    <span className="inline-block">Hold mic or type to create audio</span>
+                  </div>
+                </div>
+
+                <div
+                  className={`absolute inset-0 flex items-center transition-all duration-300 ${
+                    recorderState === "recording"
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-2 pointer-events-none"
+                  }`}
+                >
+                  {renderWaveform()}
+                </div>
               </div>
 
               {/* 中间占位 */}
