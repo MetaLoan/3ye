@@ -240,40 +240,40 @@ export function FateStone() {
             </button>
           </div>
         )}
-
-        {/* Instruction text / Holding messages */}
-        {!revealed && (
-          <div className="text-center h-[60px] flex flex-col items-center justify-center overflow-hidden">
-            {showUnfocusedMessage ? (
-              <p className="text-xs opacity-60 font-light tracking-wide italic">
-                <InkRevealText text={unfocusedMessage} staggerDelay={30} />
-              </p>
-            ) : isHolding && messageMode !== "idle" ? (
-              <p 
-                key={currentMessageIndex}
-                className="text-xs opacity-60 font-light tracking-wide"
-              >
-                <TextReveal 
-                  key={`msg-${currentMessageIndex}-${messageMode}`}
-                  text={holdingMessages[currentMessageIndex].text} 
-                  mode={messageMode}
-                  delayPerChar={messageMode === "fadein" 
-                    ? Math.round(40 / holdingMessages[currentMessageIndex].speed) 
-                    : Math.round(30 / holdingMessages[currentMessageIndex].speed)}
-                  onComplete={messageMode === "fadein" ? handleMessageFadeInComplete : handleMessageFadeOutComplete}
-                />
-              </p>
-            ) : !isHolding && (
-              <>
-                <p className="text-xs opacity-40 tracking-widest ">
-                  <InkRevealText text="Hold to seek guidance" />
-                </p>
-                <p className="text-xs opacity-20 mt-2">3 times remaining today</p>
-              </>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Instruction text / Holding messages - Absolute positioning */}
+      {!revealed && (
+        <div className="absolute bottom-[30px] left-0 right-0 text-center h-[60px] flex flex-col items-center justify-center overflow-hidden pointer-events-none">
+          {showUnfocusedMessage ? (
+            <p className="text-xs opacity-60 font-light tracking-wide italic">
+              <InkRevealText text={unfocusedMessage} staggerDelay={30} />
+            </p>
+          ) : isHolding && messageMode !== "idle" ? (
+            <p 
+              key={currentMessageIndex}
+              className="text-xs opacity-60 font-light tracking-wide"
+            >
+              <TextReveal 
+                key={`msg-${currentMessageIndex}-${messageMode}`}
+                text={holdingMessages[currentMessageIndex].text} 
+                mode={messageMode}
+                delayPerChar={messageMode === "fadein" 
+                  ? Math.round(40 / holdingMessages[currentMessageIndex].speed) 
+                  : Math.round(30 / holdingMessages[currentMessageIndex].speed)}
+                onComplete={messageMode === "fadein" ? handleMessageFadeInComplete : handleMessageFadeOutComplete}
+              />
+            </p>
+          ) : !isHolding && (
+            <>
+              <p className="text-xs opacity-40 tracking-widest ">
+                <InkRevealText text="Hold to seek guidance" />
+              </p>
+              <p className="text-xs opacity-20 mt-2">3 times remaining today</p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
