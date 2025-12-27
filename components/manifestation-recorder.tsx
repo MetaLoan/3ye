@@ -283,6 +283,7 @@ export function ManifestationRecorder() {
   const [audioName, setAudioName] = useState("")
   const [textInput, setTextInput] = useState("")
   const [isTextPanelOpen, setIsTextPanelOpen] = useState(false)
+  const [isTextLocked, setIsTextLocked] = useState(false)
   const [generatingMessageIndex, setGeneratingMessageIndex] = useState(0)
 
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -333,25 +334,12 @@ export function ManifestationRecorder() {
     setRecordedDuration(0)
     setInputMode("none")
     setIsTextPanelOpen(false)
-  }
-
-  const handleTextSubmit = () => {
-    if (!textInput.trim() || recorderState === "recording" || recorderState === "generating") return
-
-    const sanitized = textInput.trim()
-    const estimatedDuration = Math.min(30, Math.max(10, Math.round(sanitized.split(/\s+/).length * 0.9)))
-
-    setRecordedDuration(estimatedDuration)
-    setRecordingTime(estimatedDuration)
-    setInputMode("text")
-    setAudioName(sanitized.slice(0, 40))
-    setTextInput("")
-    setIsTextPanelOpen(false)
-    setRecorderState("recorded")
+    setIsTextLocked(false)
   }
 
   const startGenerating = () => {
     setRecordedDuration((prev) => prev || 12)
+    setIsTextLocked(true)
     setRecorderState("generating")
     setGeneratingMessageIndex(0)
 
@@ -389,6 +377,20 @@ export function ManifestationRecorder() {
     }, 35000) // 35秒生成时间
   }
 
+  const handleTextSubmit = () => {
+    if (!textInput.trim() || recorderState === "recording" || recorderState === "generating") return
+
+    const sanitized = textInput.trim()
+    const estimatedDuration = Math.min(30, Math.max(10, Math.round(sanitized.split(/\s+/).length * 0.9)))
+
+    setRecordedDuration(estimatedDuration)
+    setRecordingTime(estimatedDuration)
+    setInputMode("text")
+    setAudioName((prev) => prev || sanitized.slice(0, 40))
+    setIsTextLocked(true)
+    startGenerating()
+  }
+
   const saveRecording = () => {
     if (!audioName.trim()) return
 
@@ -408,6 +410,7 @@ export function ManifestationRecorder() {
     setRecordingTime(0)
     setRecordedDuration(0)
     setAudioName("")
+    setIsTextLocked(false)
   }
 
   const cancelSave = () => {
@@ -415,6 +418,7 @@ export function ManifestationRecorder() {
     setRecordingTime(0)
     setRecordedDuration(0)
     setAudioName("")
+    setIsTextLocked(false)
   }
 
   const deleteRecording = (id: string) => {
@@ -578,7 +582,12 @@ export function ManifestationRecorder() {
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="e.g. I want a calm focus soundtrack for deep work"
-                className="w-full min-h-[80px] px-3 py-2 border hairline border-foreground bg-transparent text-sm font-light focus:outline-none focus:bg-muted transition-colors"
+                disabled={isTextLocked || recorderState !== "idle"}
+                className={`w-full min-h-[80px] px-3 py-2 border hairline border-foreground bg-transparent text-sm font-light transition-colors ${
+                  isTextLocked || recorderState !== "idle"
+                    ? "opacity-50 cursor-not-allowed"
+                    : "focus:outline-none focus:bg-muted"
+                }`}
               />
               <div className="flex gap-2">
                 <button
