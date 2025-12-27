@@ -42,10 +42,10 @@ export function SolarSystem({ active }: { active: boolean }) {
           {PLANETS.map((planet, i) => (
             <div 
               key={planet.name}
-              className={cn(
-                "absolute rounded-full",
-                planet.name !== 'sun' && "border-white/20"
-              )}
+            className={cn(
+              "absolute rounded-full",
+              planet.name !== 'sun' && "border-white"
+            )}
               style={{
                 width: planet.orbit * 2,
                 height: planet.orbit * 2,

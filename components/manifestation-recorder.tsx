@@ -262,6 +262,7 @@ function RecordingItem({
 }
 
 type RecorderState = "idle" | "recording" | "recorded" | "generating" | "naming"
+type InputMode = "none" | "voice" | "text"
 
 // 神秘的生成状态文案
 const generatingMessages = [
@@ -276,9 +277,12 @@ const generatingMessages = [
 export function ManifestationRecorder() {
   const [recordings, setRecordings] = useState<Recording[]>(initialRecordings)
   const [recorderState, setRecorderState] = useState<RecorderState>("idle")
+  const [inputMode, setInputMode] = useState<InputMode>("none")
   const [recordingTime, setRecordingTime] = useState(0)
   const [recordedDuration, setRecordedDuration] = useState(0)
   const [audioName, setAudioName] = useState("")
+  const [textInput, setTextInput] = useState("")
+  const [isTextPanelOpen, setIsTextPanelOpen] = useState(false)
   const [generatingMessageIndex, setGeneratingMessageIndex] = useState(0)
 
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -291,7 +295,9 @@ export function ManifestationRecorder() {
     if (recorderState !== "idle") return
 
     setRecorderState("recording")
+    setInputMode("voice")
     setRecordingTime(0.1) // 从0.1开始，确保立即显示第一个波形条
+    setIsTextPanelOpen(false)
 
     if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current)
     if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current)
@@ -325,9 +331,27 @@ export function ManifestationRecorder() {
     setRecorderState("idle")
     setRecordingTime(0)
     setRecordedDuration(0)
+    setInputMode("none")
+    setIsTextPanelOpen(false)
+  }
+
+  const handleTextSubmit = () => {
+    if (!textInput.trim() || recorderState === "recording" || recorderState === "generating") return
+
+    const sanitized = textInput.trim()
+    const estimatedDuration = Math.min(30, Math.max(10, Math.round(sanitized.split(/\s+/).length * 0.9)))
+
+    setRecordedDuration(estimatedDuration)
+    setRecordingTime(estimatedDuration)
+    setInputMode("text")
+    setAudioName(sanitized.slice(0, 40))
+    setTextInput("")
+    setIsTextPanelOpen(false)
+    setRecorderState("recorded")
   }
 
   const startGenerating = () => {
+    setRecordedDuration((prev) => prev || 12)
     setRecorderState("generating")
     setGeneratingMessageIndex(0)
 
@@ -359,7 +383,7 @@ export function ManifestationRecorder() {
         generatingMessageIntervalRef.current = null
       }
       setRecorderState("naming")
-      setAudioName(`Manifestation ${recordings.length + 1}`)
+      setAudioName((prev) => prev || `Manifestation ${recordings.length + 1}`)
       // 聚焦输入框
       setTimeout(() => inputRef.current?.focus(), 100)
     }, 35000) // 35秒生成时间
@@ -444,21 +468,26 @@ export function ManifestationRecorder() {
               className={`p-4 flex items-center gap-3 cursor-pointer select-none transition-all duration-300 ${
                 recorderState === "recording" ? "bg-muted" : "hover:bg-muted"
               }`}
-              onMouseDown={startRecording}
-              onMouseUp={stopRecording}
-              onMouseLeave={() => recorderState === "recording" && stopRecording()}
-              onTouchStart={startRecording}
-              onTouchEnd={stopRecording}
-              onTouchCancel={stopRecording}
             >
-              {/* 左侧：时长或 New Recording */}
-              <div className="shrink-0 w-32 sm:w-40 overflow-hidden">
-                <div className="text-sm font-light transition-all duration-300 whitespace-nowrap overflow-hidden">
+              {/* 左侧：文本输入入口 */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (recorderState === "recording" || recorderState === "generating") return
+                  setIsTextPanelOpen((prev) => !prev)
+                  setInputMode("text")
+                }}
+                className="shrink-0 w-32 sm:w-40 overflow-hidden text-left"
+              >
+                <div className="text-sm font-normal transition-all duration-300 whitespace-nowrap overflow-hidden">
                   <span className="inline-block">
-                    {recorderState === "recording" ? formatTime(recordingTime) : "New Desire Recording"}
+                    Input Your Need
                   </span>
                 </div>
-              </div>
+                <div className="text-[11px] opacity-50 font-light whitespace-nowrap overflow-hidden mt-1">
+                  <span className="inline-block">Type to synthesize a voice</span>
+                </div>
+              </button>
 
               {/* 中间：提示文字（idle）或红色波形（recording）*/}
               <div className="flex-1 min-w-0 relative h-4">
@@ -470,7 +499,7 @@ export function ManifestationRecorder() {
                     transform: recorderState === "idle" ? "translateX(0)" : "translateX(-20px)",
                   }}
                 >
-                  <span className="text-xs opacity-40 font-light whitespace-nowrap">Hold to record (max 30s)</span>
+                  <span className="text-xs opacity-40 font-light whitespace-nowrap">Hold mic to record (max 30s)</span>
                 </div>
 
                 {/* 红色波形 - 从麦克风位置向左生长 */}
@@ -505,7 +534,14 @@ export function ManifestationRecorder() {
               </div>
 
               {/* 右侧：麦克风按钮 */}
-              <div
+              <button
+                type="button"
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={() => recorderState === "recording" && stopRecording()}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                onTouchCancel={stopRecording}
                 className={`w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 ${
                   recorderState === "recording" ? "bg-red-500 text-white" : "bg-foreground text-background"
                 }`}
@@ -514,6 +550,54 @@ export function ManifestationRecorder() {
                   <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
                   <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                 </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 文本输入面板 */}
+        <div
+          className="grid transition-all duration-400 ease-out border-t hairline border-foreground/20"
+          style={{
+            gridTemplateRows: isTextPanelOpen && recorderState === "idle" ? "1fr" : "0fr",
+          }}
+        >
+          <div className="overflow-hidden">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs opacity-60 font-light">Describe your need</label>
+                <span className="text-[11px] opacity-40 font-light">We will voice it for you</span>
+              </div>
+              <textarea
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="e.g. I want a calm focus soundtrack for deep work"
+                className="w-full min-h-[80px] px-3 py-2 border hairline border-foreground bg-transparent text-sm font-light focus:outline-none focus:bg-muted transition-colors"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleTextSubmit}
+                  disabled={!textInput.trim()}
+                  className={`flex-1 py-2 text-sm font-light border hairline border-foreground transition-all duration-200 ${
+                    textInput.trim()
+                      ? "bg-foreground text-background hover:opacity-80"
+                      : "opacity-40 cursor-not-allowed"
+                  }`}
+                >
+                  Generate from text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTextPanelOpen(false)
+                    setInputMode("none")
+                    setTextInput("")
+                  }}
+                  className="px-4 py-2 text-sm font-light border hairline border-foreground hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -545,7 +629,7 @@ export function ManifestationRecorder() {
                     transform: recorderState === "recorded" ? "translateX(0)" : "translateX(-10px)",
                   }}
                 >
-                  Recording complete · {formatTime(recordedDuration)}
+                  {inputMode === "text" ? "Text captured" : "Recording complete"} · {formatTime(recordedDuration)}
                 </span>
               </div>
 
