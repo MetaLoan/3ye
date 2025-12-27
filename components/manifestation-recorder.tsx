@@ -478,6 +478,9 @@ export function ManifestationRecorder() {
                 <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
                   <span className="inline-block">Input Your Need</span>
                 </div>
+                <div className="text-xs opacity-60 font-light whitespace-nowrap overflow-hidden mt-1">
+                  <span className="inline-block">Hold mic or type to create audio</span>
+                </div>
               </div>
 
               {/* 中间：提示文字（idle）或红色波形（recording）*/}
@@ -508,11 +511,7 @@ export function ManifestationRecorder() {
                       )
                     })}
                   </div>
-                ) : (
-                  <span className="text-sm opacity-60 font-light whitespace-nowrap">
-                    Hold mic or type to create audio
-                  </span>
-                )}
+                ) : null}
               </div>
 
               {/* 右侧：操作按钮组 */}
