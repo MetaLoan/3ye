@@ -469,25 +469,15 @@ export function ManifestationRecorder() {
                 recorderState === "recording" ? "bg-muted" : "hover:bg-muted"
               }`}
             >
-              {/* 左侧：文本输入入口 */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (recorderState === "recording" || recorderState === "generating") return
-                  setIsTextPanelOpen((prev) => !prev)
-                  setInputMode("text")
-                }}
-                className="shrink-0 w-32 sm:w-40 overflow-hidden text-left"
-              >
-                <div className="text-sm font-normal transition-all duration-300 whitespace-nowrap overflow-hidden">
-                  <span className="inline-block">
-                    Input Your Need
-                  </span>
+              {/* 左侧：标题说明 */}
+              <div className="shrink-0 w-32 sm:w-40 overflow-hidden">
+                <div className="text-sm font-normal whitespace-nowrap overflow-hidden">
+                  <span className="inline-block">Input Your Need</span>
                 </div>
                 <div className="text-[11px] opacity-50 font-light whitespace-nowrap overflow-hidden mt-1">
-                  <span className="inline-block">Type to synthesize a voice</span>
+                  <span className="inline-block">Hold mic or type to create audio</span>
                 </div>
-              </button>
+              </div>
 
               {/* 中间：提示文字（idle）或红色波形（recording）*/}
               <div className="flex-1 min-w-0 relative h-4">
@@ -533,24 +523,40 @@ export function ManifestationRecorder() {
                 )}
               </div>
 
-              {/* 右侧：麦克风按钮 */}
-              <button
-                type="button"
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={() => recorderState === "recording" && stopRecording()}
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                onTouchCancel={stopRecording}
-                className={`w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 ${
-                  recorderState === "recording" ? "bg-red-500 text-white" : "bg-foreground text-background"
-                }`}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                </svg>
-              </button>
+              {/* 右侧：操作按钮组 */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (recorderState === "recording" || recorderState === "generating") return
+                    setIsTextPanelOpen((prev) => !prev)
+                    setInputMode("text")
+                  }}
+                  className="w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 bg-background hover:bg-muted"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                  onMouseLeave={() => recorderState === "recording" && stopRecording()}
+                  onTouchStart={startRecording}
+                  onTouchEnd={stopRecording}
+                  onTouchCancel={stopRecording}
+                  className={`w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 ${
+                    recorderState === "recording" ? "bg-red-500 text-white" : "bg-foreground text-background"
+                  }`}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
