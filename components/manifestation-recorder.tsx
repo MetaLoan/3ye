@@ -509,7 +509,7 @@ export function ManifestationRecorder() {
                     })}
                   </div>
                 ) : (
-                  <span className="text-xs opacity-40 font-light whitespace-nowrap">
+                  <span className="text-sm opacity-60 font-light whitespace-nowrap">
                     Hold mic or type to create audio
                   </span>
                 )}
@@ -524,7 +524,7 @@ export function ManifestationRecorder() {
                     setIsTextPanelOpen((prev) => !prev)
                     setInputMode("text")
                   }}
-                  className="w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 bg-background hover:bg-muted"
+                  className="w-14 h-10 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 bg-background hover:bg-muted"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M12 20h9" />
@@ -539,7 +539,7 @@ export function ManifestationRecorder() {
                   onTouchStart={startRecording}
                   onTouchEnd={stopRecording}
                   onTouchCancel={stopRecording}
-                  className={`w-8 h-8 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 ${
+                  className={`w-14 h-10 border hairline border-foreground flex items-center justify-center shrink-0 transition-all duration-300 ${
                     recorderState === "recording" ? "bg-red-500 text-white" : "bg-foreground text-background"
                   }`}
                 >
