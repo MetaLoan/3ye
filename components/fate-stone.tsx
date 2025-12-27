@@ -192,7 +192,7 @@ export function FateStone() {
       </div>
 
       {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="h-[200px] flex flex-col items-center justify-start mt-4">
+      <div className="min-h-[200px] flex flex-col items-center justify-start mt-4">
         {/* Oracle result */}
         {revealed && (
           <div 
