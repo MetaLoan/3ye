@@ -2,30 +2,37 @@
 
 import { useState, useEffect } from "react"
 import { InkRevealText } from "./ink-reveal-text"
+import { TarotCardData } from "@/lib/tarot-data"
 
 interface TarotCardProps {
-  onReveal: () => void
+  card: TarotCardData
+  onReveal?: () => void
+  onComplete?: () => void
+  isInteractive?: boolean
+  autoParticlize?: boolean
 }
 
-export function TarotCard({ onReveal }: TarotCardProps) {
+export function TarotCard({ card, onReveal, onComplete, isInteractive = true, autoParticlize = false }: TarotCardProps) {
   const [status, setStatus] = useState<"idle" | "flipping" | "revealed" | "pausing" | "particlizing" | "completed">("idle")
   
   const handleFlip = () => {
-    if (status === "idle") {
-      setStatus("flipping")
-      setTimeout(() => {
-        setStatus("revealed")
-        // Start 2 second pause
+    if (!isInteractive || status !== "idle") return
+    
+    setStatus("flipping")
+    setTimeout(() => {
+      setStatus("revealed")
+      if (onReveal) onReveal()
+      
+      if (autoParticlize) {
         setTimeout(() => {
           setStatus("particlizing")
-          // Particle effect duration
           setTimeout(() => {
             setStatus("completed")
-            onReveal()
+            if (onComplete) onComplete()
           }, 1000)
-        }, 2000)
-      }, 600)
-    }
+        }, 3000) // Wait 3 seconds before dissolving
+      }
+    }, 600)
   }
 
   // Create particles for disintegration
@@ -102,17 +109,17 @@ export function TarotCard({ onReveal }: TarotCardProps) {
             {/* Card Image */}
             <div className="w-full h-48 bg-muted relative overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1601024445121-e5b82f1b90d3?q=80&w=500&auto=format&fit=crop" 
-                alt="Tarot Card"
+                src={card.image} 
+                alt={card.name}
                 className="w-full h-full object-cover grayscale brightness-90 contrast-125"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60" />
             </div>
             
             <div className="flex-1 flex flex-col items-center justify-center space-y-2 p-4 text-center">
-              <InkRevealText text="The Star" className="text-sm tracking-widest  font-normal" />
+              <InkRevealText text={card.name} className="text-sm tracking-widest font-normal" />
               <div className="w-8 h-[0.5px] bg-foreground/30" />
-              <InkRevealText text="Hope • Renewal • Purpose" className="text-[10px] opacity-40 leading-relaxed" />
+              <InkRevealText text={card.keywords.join(" • ")} className="text-[10px] opacity-40 leading-relaxed" />
             </div>
           </div>
           

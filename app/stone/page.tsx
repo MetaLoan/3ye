@@ -5,9 +5,21 @@ import { BottomNav } from "@/components/bottom-nav"
 import { InkRevealText } from "@/components/ink-reveal-text"
 import { FateStone } from "@/components/fate-stone"
 import { TarotCard } from "@/components/tarot-card"
+import { TarotSpread } from "@/components/tarot-spread"
+import { DestinySymbol } from "@/components/destiny-symbol"
+import { TarotCardData } from "@/lib/tarot-data"
 
 export default function StonePage() {
   const [mode, setMode] = useState<"stone" | "tarot">("stone")
+  const [selectedCard, setSelectedCard] = useState<TarotCardData | null>(null)
+  const [isRevealed, setIsRevealed] = useState(false)
+  const [isCompleted, setIsCompleted] = useState(false)
+
+  const handleReset = () => {
+    setSelectedCard(null)
+    setIsRevealed(false)
+    setIsCompleted(false)
+  }
 
   return (
     <main className="h-screen bg-background overflow-hidden flex flex-col">
@@ -30,7 +42,7 @@ export default function StonePage() {
             {/* Mode Switcher */}
             <div className="flex items-center justify-center gap-6">
                <button 
-                  onClick={() => setMode("stone")}
+                  onClick={() => { setMode("stone"); handleReset(); }}
                   className={`text-xs uppercase tracking-widest transition-all duration-500 ${
                     mode === "stone" ? "opacity-100 border-b border-foreground pb-1" : "opacity-30 pb-1 border-b border-transparent hover:opacity-60"
                   }`}
@@ -55,13 +67,40 @@ export default function StonePage() {
                 <FateStone />
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center pt-8 animate-in fade-in zoom-in-95 duration-700">
-                 <TarotCard onReveal={() => {}} />
-                 <div className="mt-12 text-center">
-                   <p className="text-xs opacity-30 font-light tracking-widest">
-                     <InkRevealText text="Focus on your question" />
-                   </p>
-                 </div>
+              <div className="h-full flex flex-col items-center justify-center pt-4 animate-in fade-in zoom-in-95 duration-700">
+                 {!selectedCard ? (
+                   <TarotSpread onSelect={(card) => setSelectedCard(card)} />
+                 ) : isCompleted ? (
+                   <div className="animate-in fade-in zoom-in-90 duration-1000">
+                     <DestinySymbol />
+                     <div className="mt-12 text-center">
+                        <button 
+                          onClick={handleReset}
+                          className="text-[10px] uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity"
+                        >
+                          Return to Void
+                        </button>
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="flex flex-col items-center space-y-8 animate-in fade-in duration-1000">
+                     <TarotCard 
+                        card={selectedCard} 
+                        onReveal={() => setIsRevealed(true)} 
+                        autoParticlize={true}
+                        onComplete={() => setIsCompleted(true)}
+                     />
+                     
+                     {isRevealed && (
+                       <div className="max-w-xs text-center space-y-4 px-4 animate-out fade-out fill-mode-forwards duration-1000 delay-[2s]">
+                         <div className="h-[0.5px] w-12 bg-foreground/20 mx-auto" />
+                         <p className="text-xs leading-relaxed opacity-70 italic font-light">
+                           <InkRevealText text={selectedCard.meaning} staggerDelay={20} />
+                         </p>
+                       </div>
+                     )}
+                   </div>
+                 )}
               </div>
             )}
           </div>
