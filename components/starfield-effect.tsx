@@ -117,19 +117,8 @@ export function StarfieldEffect({ className, speedMultiplier = 1, colorMode = "n
         if (shapeProgress > 0) {
           // 绘制线条（带过渡）
           // 计算最终透明度：基础透明度 * 形态过渡 * fading透明度
-          const lineOpacity = brightness * shapeProgress * fadeOpacity
-          
-          if (colorProgress > 0) {
-            // 彩色线条
-            const saturation = 80 * colorProgress
-            const lightness = 50 + 10 * colorProgress
-            ctx!.strokeStyle = `hsla(${star.hue}, ${saturation}%, ${lightness}%, ${lineOpacity})`
-          } else if (currentColorMode === "rainbow" && shapeProgress > 0) {
-            // rainbow 模式早期：从黑色过渡
-            ctx!.strokeStyle = `rgba(60, 60, 80, ${lineOpacity})`
-          } else {
-            ctx!.strokeStyle = `rgba(255, 255, 255, 0)`
-          }
+          const trailOpacity = 0.7
+          ctx!.strokeStyle = `rgba(255, 255, 255, ${trailOpacity})`
           ctx!.lineWidth = Math.max(0.5, size * 0.8)
           ctx!.beginPath()
           ctx!.moveTo(x, y)
