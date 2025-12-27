@@ -1144,10 +1144,17 @@ function InkRevealParagraph({ children, delay = 0, autoScroll = false, enableAut
   )
 }
 
+const resonanceMessages = [
+  "Calibrating soul resonance frequency...",
+  "Generating results...",
+]
+
 export default function ConnectPage() {
   const [activePortal, setActivePortal] = useState<PortalId | "none">("none")
   const [isResonating, setIsResonating] = useState(false)
   const [isDoorOpening, setIsDoorOpening] = useState(false)
+  const [resonanceMessageIndex, setResonanceMessageIndex] = useState(0)
+  const [resonanceMessageVisible, setResonanceMessageVisible] = useState(false)
   const outerSphereRef = useRef<HTMLButtonElement | null>(null)
   const [movingSphere, setMovingSphere] = useState<null | { left: number; top: number; deltaY: number }>(null)
   const [movingSphereGo, setMovingSphereGo] = useState(false)
@@ -1174,6 +1181,37 @@ export default function ConnectPage() {
       setDraftTimeValue("")
     }
   }, [editing, portalValues])
+
+  useEffect(() => {
+    if (!isResonating || isDoorOpening) {
+      setResonanceMessageVisible(false)
+      setResonanceMessageIndex(0)
+      return
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let currentIndex = 0
+
+    const startCycle = () => {
+      setResonanceMessageIndex(currentIndex)
+      setResonanceMessageVisible(true)
+
+      timers.push(
+        setTimeout(() => {
+          setResonanceMessageVisible(false)
+          timers.push(
+            setTimeout(() => {
+              currentIndex = (currentIndex + 1) % resonanceMessages.length
+              startCycle()
+            }, 200)
+          )
+        }, 2000)
+      )
+    }
+
+    startCycle()
+    return () => timers.forEach(clearTimeout)
+  }, [isResonating, isDoorOpening])
 
   const handleSelectField = (portal: PortalId, field: FieldKey) => {
     if (isResonating) return
@@ -1490,13 +1528,11 @@ export default function ConnectPage() {
       {/* 旋转/调试时的提示文案：依次出现、底部显示、纯黑不透明 */}
       {isResonating && !isDoorOpening && (
         <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center pb-10">
-          <div className="text-center text-black text-xs font-black space-y-2">
-            <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-              Calibrating Soul Resonance Frequency...
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: "1000ms" }}>
-              Generating Results...
-            </div>
+          <div
+            className="text-center text-black text-xs font-normal transition-opacity duration-300"
+            style={{ opacity: resonanceMessageVisible ? 1 : 0 }}
+          >
+            {resonanceMessages[resonanceMessageIndex]}
           </div>
         </div>
       )}
