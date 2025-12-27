@@ -166,9 +166,17 @@ export function FateStone() {
   }, [])
 
   return (
-    <div className="relative flex flex-col items-center justify-start pt-8">
-      {/* Stone */}
-      <div className="relative" ref={stoneRef}>
+    <div className="relative w-full h-full">
+      {/* Stone Container - 使用绝对定位占满空间，确保石头始终居中且不被挤压 */}
+      <div 
+        className="absolute inset-0 flex items-center justify-center transition-all duration-700 ease-out"
+        style={{
+          transform: revealed ? 'translateY(-20px) scale(0.9)' : 'translateY(-20px) scale(1.5)',
+          opacity: revealed ? 0.5 : 1,
+          filter: revealed ? 'blur(8px)' : 'blur(0px)',
+        }}
+        ref={stoneRef}
+      >
         {/* 3D 多面体石头 */}
         <div
           onMouseDown={startHold}
@@ -176,13 +184,14 @@ export function FateStone() {
           onMouseLeave={releaseStone}
           onTouchStart={startHold}
           onTouchEnd={releaseStone}
+          className="relative z-0"
           style={{ 
             cursor: revealed ? 'default' : 'pointer',
             pointerEvents: revealed ? 'none' : 'auto'
           }}
         >
           <Stone3D 
-            size={320}
+            size={240}
             isHolding={isHolding}
             progress={progress}
             revealed={revealed}
@@ -191,53 +200,57 @@ export function FateStone() {
         </div>
       </div>
 
-      {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="h-[200px] flex flex-col items-center justify-start mt-4">
-        {/* Oracle result */}
-        {revealed && (
-          <div 
-            className="text-center space-y-4 transition-all duration-500 ease-out"
-            style={{
-              opacity: isFadingOut ? 0 : 1,
-              transform: isFadingOut ? 'translateY(-20px)' : 'translateY(0)',
-            }}
-          >
-            <div className="text-5xl font-light tracking-wider">
-              <InkRevealText text={oracle.result} />
-            </div>
-            <div className="text-sm opacity-60 max-w-xs mx-auto leading-relaxed">
-              <InkRevealText text={oracle.message} />
-            </div>
-          </div>
-        )}
-
-        {/* Choice buttons */}
-        {showChoice && (
-          <div 
-            className="flex gap-4 w-full max-w-sm px-6 mt-6 pb-5 mb-5 transition-all duration-500 ease-out"
-            style={{
-              opacity: isFadingOut ? 0 : 1,
-              transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',
-            }}
-          >
-            <button
-              onClick={() => makeChoice("follow")}
-              className="flex-1 border hairline border-foreground py-3 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal"
+      {/* 底部交互/结果区域 - 绝对定位在底部，允许石头与其重叠 */}
+      <div className="absolute bottom-0 left-0 right-0 h-[220px] flex flex-col items-center justify-start pointer-events-none z-10">
+        <div className="pointer-events-auto flex flex-col items-center w-full">
+          {/* Oracle result */}
+          {revealed && (
+            <div 
+              className="text-center space-y-4 transition-all duration-500 ease-out"
+              style={{
+                opacity: isFadingOut ? 0 : 1,
+                transform: isFadingOut ? 'translateY(-20px)' : 'translateY(0)',
+              }}
             >
-              Follow
-            </button>
-            <button
-              onClick={() => makeChoice("rebel")}
-              className="flex-1 border hairline border-foreground bg-foreground text-background py-3 text-sm font-light hover:bg-background hover:text-foreground transition-all ink-reveal-delay-1"
-            >
-              No Way
-            </button>
-          </div>
-        )}
+              <div className="text-5xl font-light tracking-wider">
+                <InkRevealText text={oracle.result} />
+              </div>
+              <div className="text-sm opacity-60 max-w-xs mx-auto leading-relaxed">
+                <InkRevealText text={oracle.message} />
+              </div>
+            </div>
+          )}
 
-        {/* Instruction text / Holding messages */}
-        {!revealed && (
-          <div className="text-center h-[60px] flex flex-col items-center justify-center overflow-hidden">
+          {/* Choice buttons */}
+          {showChoice && (
+            <div 
+              className="flex gap-4 w-full max-w-sm px-6 mt-6 pb-5 mb-5 transition-all duration-500 ease-out"
+              style={{
+                opacity: isFadingOut ? 0 : 1,
+                transform: isFadingOut ? 'translateY(20px)' : 'translateY(0)',
+              }}
+            >
+              <button
+                onClick={() => makeChoice("follow")}
+                className="flex-1 border hairline border-foreground py-3 text-sm font-light hover:bg-foreground hover:text-background transition-all ink-reveal"
+              >
+                Follow
+              </button>
+              <button
+                onClick={() => makeChoice("rebel")}
+                className="flex-1 border hairline border-foreground bg-foreground text-background py-3 text-sm font-light hover:bg-background hover:text-foreground transition-all ink-reveal-delay-1"
+              >
+                No Way
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 提示文案 - 绝对定位，紧贴底部 */}
+      {!revealed && (
+        <div className="absolute bottom-[-15px] left-0 right-0 text-center pointer-events-none z-20">
+          <div className="pointer-events-none">
             {showUnfocusedMessage ? (
               <p className="text-xs opacity-60 font-light tracking-wide italic">
                 <InkRevealText text={unfocusedMessage} staggerDelay={30} />
@@ -259,15 +272,15 @@ export function FateStone() {
               </p>
             ) : !isHolding && (
               <>
-                <p className="text-xs opacity-40 tracking-widest ">
+                <p className="text-xs opacity-100 font-bold">
                   <InkRevealText text="Hold to seek guidance" />
                 </p>
-                <p className="text-xs opacity-20 mt-2">3 times remaining today</p>
+                <p className="text-xs text-foreground opacity-40 mt-2 font-normal">3 times remaining today</p>
               </>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
