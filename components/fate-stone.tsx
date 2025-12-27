@@ -182,7 +182,7 @@ export function FateStone() {
           }}
         >
           <Stone3D 
-            size={320}
+            size={240}
             isHolding={isHolding}
             progress={progress}
             revealed={revealed}
@@ -192,7 +192,7 @@ export function FateStone() {
       </div>
 
       {/* 底部内容区域 - 固定高度避免布局跳动 */}
-      <div className="shrink-0 h-[220px] flex flex-col items-center justify-start pb-4 w-full">
+      <div className="shrink-0 h-[200px] flex flex-col items-center justify-start pb-4 w-full">
         {/* Oracle result */}
         {revealed && (
           <div 

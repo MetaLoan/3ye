@@ -12,15 +12,15 @@ export default function StonePage() {
   return (
     <main className="h-screen bg-background overflow-hidden flex flex-col">
       <div className="h-[calc(100vh-84px)] overflow-hidden">
-        <div className="p-6 pt-12 max-w-screen-sm mx-auto flex flex-col h-full">
-          <div className="shrink-0 mb-8 text-center">
+        <div className="p-6 pt-6 max-w-screen-sm mx-auto flex flex-col h-full">
+          <div className="shrink-0 mb-2 text-center">
             <h1 className="text-4xl font-light mb-4">
               <InkRevealText 
                 key={mode} 
                 text={mode === "stone" ? "The Fate Stone" : "Tarot Reading"} 
               />
             </h1>
-            <p className="text-xs opacity-60 font-light tracking-wide mb-6">
+            <p className="text-xs opacity-60 font-light tracking-wide mb-4">
               <InkRevealText 
                 key={`sub-${mode}`}
                 text={mode === "stone" ? "When destiny calls for an answer" : "Reveal the cards of your fate"} 
