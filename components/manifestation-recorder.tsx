@@ -567,7 +567,9 @@ export function ManifestationRecorder() {
 
         {/* 文本输入面板 */}
         <div
-          className="grid transition-all duration-400 ease-out border-t hairline border-foreground/20"
+          className={`grid transition-all duration-400 ease-out ${
+            isTextPanelOpen && recorderState === "idle" ? "border-t hairline border-foreground/20" : ""
+          }`}
           style={{
             gridTemplateRows: isTextPanelOpen && recorderState === "idle" ? "1fr" : "0fr",
           }}
