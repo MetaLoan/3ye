@@ -167,3 +167,4 @@ export const getRandomCard = (): TarotCardData => {
   return tarotCards[Math.floor(Math.random() * tarotCards.length)];
 };
 
+

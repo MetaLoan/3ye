@@ -67,7 +67,7 @@ export default function StonePage() {
                 <FateStone />
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center pt-4 animate-in fade-in zoom-in-95 duration-700">
+              <div className="h-full flex flex-col items-center justify-center pt-4 animate-in fade-in zoom-in-95 duration-700 -mx-6">
                  {!selectedCard ? (
                    <TarotSpread onSelect={(card) => setSelectedCard(card)} />
                  ) : isCompleted ? (
